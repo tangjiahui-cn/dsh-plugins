@@ -1,0 +1,15 @@
+{
+  "name": "dsh-plugins",
+  "version": "0.0.0",
+  "private": true,
+  "description": "DeepSeekHarness 自定义插件集合包，提升开发者体验。",
+  "packageManager": "pnpm@11.26.0",
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=11"
+  },
+  "volta": {
+    "node": "24.21.0",
+    "pnpm": "11.26.0"
+  }
+}
