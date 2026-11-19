@@ -1,0 +1,51 @@
+{
+  "name": "@tjh/dsh-plugin-useage",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "在会话标题行展示今日与累计花费、token 与账户余额。",
+  "engines": {
+    "node": ">=24"
+  },
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./projection": "./projection.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "projection.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "README.md",
+    "icon.svg",
+    "assets"
+  ],
+  "scripts": {
+    "check": "node --check index.js && node --check projection.js && node --check client.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "^3.19.0",
+    "zod": "^4.6.6"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  },
+  "devDependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  }
+}

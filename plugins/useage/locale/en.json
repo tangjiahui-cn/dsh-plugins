@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Conversation spend",
+    "description": "Shows today's and total spend, input/output tokens, and account balance in the session header. Amounts use configurable per-model prices."
+  }
+}
