@@ -29,8 +29,5 @@ dsh plugin --profile <profile> add @tjh/dsh-plugin-useage
 ## 发布插件
 
 ```sh
-pnpm release:changelog   # 可选：先刷新 changelog，审阅后提交
 pnpm release
 ```
-
-`pnpm release` 是完整流程：逐包询问版本、生成 changelog、提交、发布并打 tag。也可以先运行 `release:changelog` 审阅并提交，再执行 `release`。发布前提交全部改动；失败报告在 `.tmp/release/<时间戳>/`，中断后运行 `pnpm release:clean`。
