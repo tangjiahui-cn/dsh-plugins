@@ -37,23 +37,26 @@ export async function apply(ctx, config) {
   const merged = { ...DEFAULT_CONFIG, ...(config ?? {}) }
   await ctx.sessionProjections.register(createConversationCostDefinition(merged))
 
-  const persistence = ctx.get?.('sessionPersistence')
-  const webServer = ctx.get?.('webServer')
-  if (persistence === undefined || webServer === undefined) return
   const home = process.env.DSH_HOME ?? join(homedir(), '.dsh')
-  ctx.effect(() => webServer.register({
-    kind: 'exact',
-    path: '/plugin/useage/today',
-    resource: async () => {
-      try {
-        const result = await collectToday({
-          persistence, home, timezone: merged.timezone, prices: merged.prices,
-        })
-        return Response.json(result)
-      } catch (error) {
-        console.warn('[useage] today total failed', error)
-        return Response.json({ error: String(error?.message ?? error) }, { status: 500 })
-      }
-    },
-  }), 'useage: today route')
+  // webServer 与 sessionPersistence 在启动时可能尚未就绪。注入作用域会在两者可用后执行一次，
+  // 而不是像 ctx.get 那样探测一次就放弃注册。
+  ctx.inject(['sessionPersistence', 'webServer'], (scope) => {
+    const persistence = scope.sessionPersistence
+    const webServer = scope.webServer
+    scope.effect(() => webServer.register({
+      kind: 'exact',
+      path: '/plugin/useage/today',
+      resource: async () => {
+        try {
+          const result = await collectToday({
+            persistence, home, timezone: merged.timezone, prices: merged.prices,
+          })
+          return Response.json(result)
+        } catch (error) {
+          console.warn('[useage] today total failed', error)
+          return Response.json({ error: String(error?.message ?? error) }, { status: 500 })
+        }
+      },
+    }), 'useage: today route')
+  })
 }
