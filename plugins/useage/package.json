@@ -1,6 +1,6 @@
 {
   "name": "@tjhaaa/dsh-plugin-useage",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "在会话标题行展示今日与累计花费、token 与账户余额。",
   "license": "MIT",
