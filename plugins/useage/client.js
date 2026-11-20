@@ -110,12 +110,11 @@ window.__ModuleLoader__.load({
   border:1.5px solid currentColor;border-right-color:transparent;border-radius:50%;
   animation:ue-rot .8s linear infinite}
 @keyframes ue-rot{to{transform:rotate(360deg)}}
-.ue-error{display:flex;align-items:center;gap:6px;font-size:11px;
-  color:var(--dsw-alias-state-error-primary,#f0674a)}
-.ue-retry{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;
-  padding:0;border:0;border-radius:4px;background:none;color:inherit;cursor:pointer}
-.ue-retry:hover{background:var(--dsw-alias-interactive-bg-hover,#2a2b31)}
-.ue-error-inline{display:flex;align-items:center;gap:5px;color:var(--dsw-alias-state-error-primary,#f0674a)}
+.ue-error,.ue-error-inline{display:flex;align-items:center;padding:0;border:0;background:none;
+  font:inherit;cursor:pointer;color:var(--dsw-alias-state-error-primary,#f0674a)}
+.ue-error{gap:6px;font-size:11px}
+.ue-error-inline{gap:5px}
+.ue-error:hover,.ue-error-inline:hover{text-decoration:underline}
 .ue-error-reason{font-style:normal;opacity:.75;max-width:150px;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap}
 .ue-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
@@ -352,15 +351,15 @@ window.__ModuleLoader__.load({
                 balance.status === 'loading'
                   ? h('span', { className: 'ue-foot-v' }, h('i', { className: 'ue-spin' }))
                   : balance.status === 'error'
-                    ? h('span', { className: 'ue-error', title: balance.reason ?? '' },
+                    ? h('button', {
+                      type: 'button',
+                      className: 'ue-error',
+                      title: balance.reason === undefined ? t('retry') : `${t('retry')} · ${balance.reason}`,
+                      'aria-label': t('retry'),
+                      onClick: loadBalance,
+                    },
                       t('balanceFailed'),
-                      h('button', {
-                        type: 'button',
-                        className: 'ue-retry',
-                        title: t('retry'),
-                        'aria-label': t('retry'),
-                        onClick: loadBalance,
-                      }, h('svg', {
+                      h('svg', {
                         width: 12,
                         height: 12,
                         viewBox: '0 0 16 16',
@@ -369,7 +368,7 @@ window.__ModuleLoader__.load({
                         strokeWidth: 1.5,
                         strokeLinecap: 'round',
                         'aria-hidden': true,
-                      }, h('path', { d: 'M13.2 8A5.2 5.2 0 1 1 11.4 4' }), h('path', { d: 'M11.4 1.6v2.8H8.6' }))),
+                      }, h('path', { d: 'M13.2 8A5.2 5.2 0 1 1 11.4 4' }), h('path', { d: 'M11.4 1.6v2.8H8.6' })),
                     )
                     : balance.status === 'ready'
                       ? h('button', {
@@ -386,15 +385,15 @@ window.__ModuleLoader__.load({
                 todayTotal.status === 'loading'
                   ? h('span', { className: 'ue-foot-v' }, h('i', { className: 'ue-spin' }))
                   : todayTotal.status === 'error'
-                    ? h('span', { className: 'ue-error-inline' },
+                    ? h('button', {
+                      type: 'button', className: 'ue-error-inline', title: t('retry'), 'aria-label': t('retry'),
+                      onClick: loadTodayTotal,
+                    },
                       t('balanceFailed'),
-                      h('button', {
-                        type: 'button', className: 'ue-retry', title: t('retry'), 'aria-label': t('retry'),
-                        onClick: loadTodayTotal,
-                      }, h('svg', {
+                      h('svg', {
                         width: 11, height: 11, viewBox: '0 0 16 16', fill: 'none',
                         stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', 'aria-hidden': true,
-                      }, h('path', { d: 'M13.2 8A5.2 5.2 0 1 1 11.4 4' }), h('path', { d: 'M11.4 1.6v2.8H8.6' }))))
+                      }, h('path', { d: 'M13.2 8A5.2 5.2 0 1 1 11.4 4' }), h('path', { d: 'M11.4 1.6v2.8H8.6' })))
                     : h('button', {
                       type: 'button',
                       className: 'ue-foot-v ue-foot-refresh',
