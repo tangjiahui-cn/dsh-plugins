@@ -11,5 +11,15 @@
   "volta": {
     "node": "24.21.0",
     "pnpm": "11.26.0"
+  },
+  "scripts": {
+    "release": "node scripts/release/cli.mjs release",
+    "release:publish": "node scripts/release/cli.mjs publish",
+    "release:changelog": "node scripts/release/cli.mjs changelog",
+    "release:tag": "node scripts/release/cli.mjs tag",
+    "release:clean": "node scripts/release/cli.mjs clean",
+    "release:plan": "node scripts/release/cli.mjs publish --dry-run",
+    "release:withdraw": "node scripts/release/cli.mjs withdraw",
+    "test:release": "node --test \"scripts/release/test/*.test.mjs\""
   }
 }

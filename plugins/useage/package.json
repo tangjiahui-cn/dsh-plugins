@@ -1,9 +1,21 @@
 {
   "name": "@tjh/dsh-plugin-useage",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "description": "在会话标题行展示今日与累计花费、token 与账户余额。",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tangjiahui-cn/dsh-plugins.git",
+    "directory": "plugins/useage"
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "dsh-plugin",
+    "usage",
+    "cost"
+  ],
   "engines": {
     "node": ">=24"
   },
@@ -18,14 +30,21 @@
     "index.js",
     "client.js",
     "projection.js",
+    "today.js",
     "cordis.patch.yml",
     "locale/*.json",
     "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
     "icon.svg",
     "assets"
   ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
-    "check": "node --check index.js && node --check projection.js && node --check client.js",
+    "check": "node --check index.js && node --check projection.js && node --check today.js && node --check client.js",
     "test": "node --test test/*.test.js"
   },
   "dependencies": {

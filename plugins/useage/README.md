@@ -25,13 +25,19 @@
 
 DSH 升级后先比对该表，再按 `dsh-doc` 的升级指引复核投影与槽位契约。
 
-## 安装与启用
+## 安装
+
+从 npm 安装：
 
 ```sh
-pnpm install
+dsh plugin --profile <profile> add @tjh/dsh-plugin-useage
 ```
 
-在插件管理器里安装本子包，或在 profile 的 `cordis.patch.yml` 里加入：
+也可以在插件管理器中搜索并安装 `@tjh/dsh-plugin-useage`。DSH profile 的 registry 必须能解析 npm 官方源；仓库根 `.npmrc` 只作用于本仓库命令，不作用于 profile。
+
+本地开发时，在仓库根执行 `pnpm install`，再在插件管理器中安装本地目录 `plugins/useage`。
+
+启用：在 profile 的 `cordis.patch.yml` 里加入：
 
 ```yaml
 - insert:
