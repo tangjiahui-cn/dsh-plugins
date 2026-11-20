@@ -9,7 +9,7 @@
 - 新增仓库级发布工具 `scripts/release/`，在根 `package.json` 注册 `release:*` 命令。
 - 新增 `release:changelog`：按子包上一条 git tag 到 `HEAD` 的提交生成 `plugins/<目录>/CHANGELOG.md`；首版没有 tag 时使用该包目录的全部提交。
 - 新增 `release` 一键交互流程：清理陈旧临时状态、选择子包、逐包询问版本、生成 changelog、提交版本与 changelog、预检、确认、发布、创建并推送 tag、写报告。
-- 新增 `release:clean`：清除 `.tmp/release/session.json`、临时目录与陈旧 lock，不删除历史报告与 npm 缓存。
+- 新增 `release:clean`：按 session 把本地恢复到本次发布开始前的提交与文件；版本已发布或 tag 已存在时拒绝并提示 `release:withdraw`；无 session 时只清临时目录与陈旧 lock。
 - 新增 `release:tag`：为已发布版本补建或修复 tag；目标 commit 按 session、npm `gitHead`、`--at` 顺序解析，不默认使用 HEAD。
 - `release:publish` 保留为低层命令，发布前校验 changelog 内容与当前 tag 范围一致、tag 在本地与 origin 都不存在；发布成功后按发布前记录的 commit 创建 annotated tag 并 push 到 origin。
 - 发布失败报告与 `release:withdraw` 同步输出或执行 tag 删除命令；已发布版本缺 changelog 时只补 tag 并标记 `changelogMissing`，不重发同版本。

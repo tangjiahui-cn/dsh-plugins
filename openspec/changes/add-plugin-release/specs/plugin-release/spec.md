@@ -258,7 +258,7 @@
 
 ### Requirement: 一键发布进入交互流程
 
-`release` MUST 在单个命令内完成：读取并清理陈旧临时状态、发现并选择子包、逐包询问版本、生成 changelog、提交版本与 changelog、预检、展示计划并确认、发布、创建并推送 tag、写报告。开始前 MUST 要求工作区干净；提交 MUST 只包含本次生成的版本号与 `CHANGELOG.md`。每个关键步骤 MUST 写入 `.tmp/release/session.json`，成功后 MUST 删除 session。对 registry 上已存在的版本 MUST 跳过发布、不重写 changelog，并按 `release:tag` 的 commit 解析与 tag 状态规则补建缺失的 tag，不得默认使用 `HEAD`。已发布版本缺 changelog 时 MUST 完成 tag 修复并在报告中告警；本次新发布版本缺 changelog 时 MUST 在发布前失败。
+`release` MUST 在单个命令内完成：读取并清理陈旧临时状态、发现并选择子包、逐包询问版本、生成 changelog、提交版本与 changelog、预检、展示计划并确认、发布、创建并推送 tag、写报告。开始前 MUST 要求工作区干净；提交 MUST 只包含本次生成的版本号与 `CHANGELOG.md`。每个关键步骤 MUST 写入 `.tmp/release/session.json`；成功发布后 MUST 删除 session；在发布确认处取消时 MUST 保留 session 并标记为 `cancelled`，供 `release:clean` 撤回。对 registry 上已存在的版本 MUST 跳过发布、不重写 changelog，并按 `release:tag` 的 commit 解析与 tag 状态规则补建缺失的 tag，不得默认使用 `HEAD`。已发布版本缺 changelog 时 MUST 完成 tag 修复并在报告中告警；本次新发布版本缺 changelog 时 MUST 在发布前失败。
 
 #### Scenario: 单包一键发布
 
@@ -288,36 +288,41 @@
 #### Scenario: 用户取消
 
 - **WHEN** 用户在发布确认处取消
-- **THEN** 命令不调用发布接口，并清理 session
+- **THEN** 命令不调用发布接口，保留 `cancelled` session，供 `release:clean` 恢复发布前快照
 
 #### Scenario: 初始工作区不干净
 
 - **WHEN** 开始执行时存在未提交改动
 - **THEN** 命令终止，不写版本号、不生成 changelog、不发布
 
-### Requirement: 中断后的临时状态可清理
+### Requirement: release:clean 恢复到发布前快照
 
-`release` MUST 在清理前读取 session 中的 `releaseCommit`、基线 `HEAD` 与生成文件 hash。若工作区脏且当前 `HEAD` 等于基线、脏文件 hash 与记录一致，MUST 恢复这些文件后再清理；否则 MUST 停止并列出脏文件，不得丢弃人工修改。清理后 MUST 删除 `.tmp/release/session.json` 与 `.tmp/release/session/`。`release:clean` MUST 删除相同状态，但 MUST NOT 修改工作区；没有状态时以 0 退出。清理 MUST NOT 删除 `.tmp/release` 下的历史报告与 `npm-cache`。
+`release:clean` MUST 读取 session 的 `baseHead`、`releaseCommit`、包与生成文件列表，把本地状态恢复到本次 release 开始前的 `baseHead`。执行前 MUST 确认所有 release 包版本都未发布、tag 都不存在；任一已发布或 tag 已存在时 MUST 拒绝，提示先执行 `release:withdraw`。`HEAD` 必须是 `baseHead` 或 `releaseCommit`；存在额外提交或生成文件之外的未提交改动时 MUST 拒绝。`HEAD` 等于 `releaseCommit` 时 MUST `git reset --hard baseHead`；等于 `baseHead` 时 MUST 只恢复 hash 匹配的生成文件。完成后 MUST 删除 session、临时目录与锁，并保留历史报告和 `npm-cache`。没有 session 时 MUST 只清理临时状态，并以 0 退出。
 
-#### Scenario: 提交前中断且文件未改
+#### Scenario: 取消后清理恢复快照
 
-- **WHEN** 上次在提交前中断，当前 `HEAD` 未变且脏文件 hash 与 session 记录一致
-- **THEN** 命令恢复这些文件，删除 session 与临时目录，然后从头开始
+- **WHEN** 用户在发布确认处取消，随后执行 `pnpm release:clean`，且版本未发布、tag 不存在
+- **THEN** 命令把 `HEAD` 恢复到 `baseHead`，删除 release 提交与临时状态
 
-#### Scenario: 提交前中断但文件已改
+#### Scenario: 已发布版本拒绝清理
 
-- **WHEN** 脏文件 hash 与 session 记录不一致，或当前 `HEAD` 已变化
-- **THEN** 命令停止并列出脏文件，不自动恢复、不发布
+- **WHEN** session 中任一包版本已发布或 tag 已存在
+- **THEN** 命令拒绝 `git reset`，提示先 `release:withdraw`
 
-#### Scenario: 手动清理
+#### Scenario: 存在额外提交或改动
 
-- **WHEN** 用户执行 `pnpm release:clean`
-- **THEN** session 与临时目录被删除，报告、npm 缓存与工作区保持不变
+- **WHEN** 当前 `HEAD` 既不是 `baseHead` 也不是 `releaseCommit`，或工作区有生成文件之外的改动
+- **THEN** 命令拒绝清理并列出冲突，不修改 git 历史
 
-#### Scenario: 没有临时状态
+#### Scenario: 提交前中断
 
-- **WHEN** 不存在 session 或临时目录
-- **THEN** `pnpm release:clean` 以 0 退出并说明无需清理
+- **WHEN** session 的 `releaseCommit` 为空、`HEAD` 等于 `baseHead` 且生成文件 hash 匹配
+- **THEN** 命令恢复生成文件并删除 session
+
+#### Scenario: 没有 session
+
+- **WHEN** 不存在 session
+- **THEN** `pnpm release:clean` 只清理临时目录与陈旧锁，以 0 退出
 
 ### Requirement: 已发布版本可修复缺失 tag
 

@@ -117,7 +117,7 @@ export function parseArgs(argv) {
       continue
     }
     if (arg === '--target') {
-      if (!['release', 'publish', 'tag', 'withdraw'].includes(command)) reject('--target')
+      if (!['release', 'publish', 'tag', 'withdraw', 'clean'].includes(command)) reject('--target')
       options.target = takeValue(index, '--target')
       index += 1
       continue
@@ -185,7 +185,7 @@ async function dispatch(parsed, io) {
   }
   if (parsed.command === 'clean') {
     const { runClean } = await import('./clean-command.mjs')
-    return runClean({ io })
+    return runClean({ ...rest, targetId, io })
   }
   const { runWithdraw } = await import('./withdraw.mjs')
   return runWithdraw({ ...rest, targetId, spec: parsed.positionals[0], io })

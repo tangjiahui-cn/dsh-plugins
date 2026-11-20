@@ -26,11 +26,16 @@ async function git(cwd, args) {
 async function repo() {
   const root = await makeTempDir()
   await writeJson(join(root, 'file.json'), { version: '1.0.0' })
+  await writeFile(join(root, '.gitignore'), '.tmp/\n')
   await git(root, ['init', '-q'])
   await git(root, ['config', 'user.email', 'release@example.test'])
   await git(root, ['config', 'user.name', 'Release Test'])
   await git(root, ['add', '-A'])
   await git(root, ['commit', '-qm', 'init'])
+  const remoteRoot = await makeTempDir('dsh-release-clean-remote-')
+  await git(remoteRoot, ['init', '--bare', '-q'])
+  await git(root, ['remote', 'add', 'origin', remoteRoot])
+  await git(root, ['push', '-q', 'origin', 'HEAD'])
   return root
 }
 
@@ -110,13 +115,86 @@ test('提交前中断：hash 不匹配或 HEAD 变化时停止', async () => {
   )
 })
 
-test('release:clean 命令清理状态并返回 0', async () => {
+test('release:clean 恢复提交前生成文件并清理状态', async () => {
   const root = await repo()
-  await writeSession({ stage: 'prepared' }, root)
+  const baseHead = (await headCommit({ repoRoot: root })).trim()
+  await writeFile(join(root, 'file.json'), JSON.stringify({ version: '2.0.0' }))
+  const files = await hashFiles(root, ['file.json'])
+  await writeSession({ stage: 'prepared', baseHead, releaseCommit: null, files, packages: [] }, root)
   const logs = []
-  const code = await runClean({ repoRoot: root, io: { log: message => logs.push(message), error() {} } })
+  const code = await runClean({ repoRoot: root, gitBin: 'git', io: { log: message => logs.push(message), error() {} } })
   assert.equal(code, 0)
+  assert.match(await readFile(join(root, 'file.json'), 'utf8'), /1\.0\.0/)
   assert.equal(await readSession(root), null)
-  assert.match(logs.join('\n'), /已删除/)
+  assert.match(logs.join('\n'), /已恢复/)
 })
 
+test('release:clean 发现版本已发布时拒绝恢复', async () => {
+  const root = await repo()
+  const baseHead = (await headCommit({ repoRoot: root })).trim()
+  await writeSession({
+    stage: 'cancelled',
+    baseHead,
+    releaseCommit: baseHead,
+    files: [],
+    packages: [{ name: '@tjh/dsh-plugin-alpha', version: '0.1.0' }],
+  }, root)
+  const target = {
+    async inspectVersion() {
+      return { state: 'published', publishedAt: '2026-11-20T00:00:00.000Z', gitHead: null }
+    },
+  }
+  await assert.rejects(
+    () => runClean({ repoRoot: root, gitBin: 'git', targetAdapter: target, io: { log() {}, error() {} } }),
+    /已发布，不能恢复到发布前快照/,
+  )
+  assert.notEqual(await readSession(root), null)
+})
+
+
+test('release:clean 发现额外改动时拒绝恢复', async () => {
+  const root = await repo()
+  const baseHead = (await headCommit({ repoRoot: root })).trim()
+  await writeSession({ stage: 'prepared', baseHead, releaseCommit: null, files: [], packages: [] }, root)
+  await writeFile(join(root, 'extra.txt'), 'extra\n')
+  await assert.rejects(
+    () => runClean({ repoRoot: root, gitBin: 'git', io: { log() {}, error() {} } }),
+    /之外的改动/,
+  )
+})
+
+test('release:clean 发现 tag 已存在时拒绝恢复', async () => {
+  const root = await repo()
+  const baseHead = (await headCommit({ repoRoot: root })).trim()
+  await writeSession({
+    stage: 'cancelled',
+    baseHead,
+    releaseCommit: baseHead,
+    files: [],
+    packages: [{ name: '@tjh/dsh-plugin-alpha', version: '0.1.0' }],
+  }, root)
+  await git(root, ['tag', '@tjh/dsh-plugin-alpha@0.1.0'])
+  const target = {
+    async inspectVersion() {
+      return { state: 'absent' }
+    },
+  }
+  await assert.rejects(
+    () => runClean({ repoRoot: root, gitBin: 'git', targetAdapter: target, io: { log() {}, error() {} } }),
+    /tag .* 已存在/,
+  )
+})
+
+test('release:clean 无 session 时只清临时状态并保留报告与缓存', async () => {
+  const root = await repo()
+  await mkdir(join(root, '.tmp/release/report'), { recursive: true })
+  await writeFile(join(root, '.tmp/release/report/report.json'), '{}')
+  await mkdir(join(root, '.tmp/release/npm-cache'), { recursive: true })
+  await writeFile(join(root, '.tmp/release/npm-cache/a'), 'a')
+  const logs = []
+  const code = await runClean({ repoRoot: root, gitBin: 'git', io: { log: message => logs.push(message), error() {} } })
+  assert.equal(code, 0)
+  assert.ok((await stat(join(root, '.tmp/release/report/report.json'))).isFile())
+  assert.ok((await stat(join(root, '.tmp/release/npm-cache/a'))).isFile())
+  assert.match(logs.join('\n'), /没有需要清理/)
+})

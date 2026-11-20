@@ -2,9 +2,11 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { join } from 'node:path'
 import { readFile, writeFile } from 'node:fs/promises'
+import { runClean } from '../clean-command.mjs'
 import { bumpVersion, runRelease } from '../flow.mjs'
 import { localTagCommit, remoteTagCommit } from '../tags.mjs'
 import { readSession } from '../session.mjs'
+import { headCommit } from '../tags.mjs'
 import { runCommand } from '../util.mjs'
 import { makeIo, makeTempDir, writeExecutable, writeFiles, writeJson } from '../test-support/helpers.mjs'
 
@@ -197,7 +199,7 @@ test('release 已发布但无法定位 tag commit 时停止', async () => {
   assert.deepEqual(data.publishedList, [])
 })
 
-test('release 在计划确认处取消时清理 session、不发布', async () => {
+test('release 在计划确认处取消后 clean 恢复快照', async () => {
   const data = await makeRepo()
   const output = io(['', '', 'n'])
   const code = await runRelease({
@@ -213,6 +215,17 @@ test('release 在计划确认处取消时清理 session、不发布', async () =
   })
   assert.equal(code, 1)
   assert.deepEqual(data.publishedList, [])
+  const session = await readSession(data.root)
+  assert.equal(session.stage, 'cancelled')
+
+  const cleanCode = await runClean({
+    repoRoot: data.root,
+    targetAdapter: data.target,
+    gitBin: 'git',
+    io: io([]),
+  })
+  assert.equal(cleanCode, 0)
+  assert.equal((await headCommit({ repoRoot: data.root })).trim(), data.commit)
   assert.equal(await readSession(data.root), null)
 })
 

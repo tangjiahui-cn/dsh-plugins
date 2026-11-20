@@ -198,12 +198,17 @@ export async function runRelease(options = {}) {
 
   const baseHead = await headCommit({ repoRoot, gitBin })
   const files = await hashFiles(repoRoot, [...new Set(changedPaths)])
+  const releasePackages = unpublished.map(item => ({
+    name: item.pkg.name,
+    version: item.pkg.version,
+  }))
   await writeSession({
     command: 'release',
     stage: 'prepared',
     baseHead,
     releaseCommit: null,
     files,
+    packages: releasePackages,
     startedAt,
   }, repoRoot)
 
@@ -227,6 +232,7 @@ export async function runRelease(options = {}) {
     baseHead,
     releaseCommit,
     files,
+    packages: releasePackages,
     startedAt,
   }, repoRoot)
 
@@ -249,8 +255,16 @@ export async function runRelease(options = {}) {
       })
     } catch (error) {
       if (error instanceof ReleaseError && /已取消发布/.test(error.message)) {
-        await clearSession(repoRoot)
-        io.log('已取消发布。')
+        await writeSession({
+          command: 'release',
+          stage: 'cancelled',
+          baseHead,
+          releaseCommit,
+          files,
+          packages: releasePackages,
+          startedAt,
+        }, repoRoot)
+        io.log('已取消发布。运行 pnpm release:clean 可恢复到发布前快照。')
         return 1
       }
       throw error

@@ -83,3 +83,11 @@
 - 在 npmjs 登录、确认 `@tjh` scope 发布权限与 origin 写权限后执行 `pnpm release`，完成版本询问、changelog 提交、发布与 tag 推送。
 - 确认 npm registry 上有版本，本地与 origin 上有对应 tag；在干净的 DSH profile 中安装该版本，确认插件行、标题行胶囊与弹窗可用。
 - 按项目评审要求归档本 change，并复核归档后的 `plugin-release` 主 spec。
+
+## 12. clean 恢复发布前快照
+
+- [x] 12.1 `release` 取消发布时保留 `cancelled` session，记录 `baseHead`、`releaseCommit`、包与版本及生成文件；成功发布后才删除 session。验证：假 TTY 取消后 session 存在且 stage 为 cancelled。
+- [x] 12.2 `release:clean` 按 session 恢复：`HEAD` 等于 `releaseCommit` 时 `git reset --hard baseHead`；等于 `baseHead` 时只恢复 hash 匹配的生成文件。验证：取消后 clean 使 HEAD 回到 baseHead 且工作区干净。
+- [x] 12.3 `release:clean` 在执行前检查包版本与 tag；任一已发布或 tag 存在时拒绝并提示 `release:withdraw`；额外提交或生成文件之外的改动时拒绝。验证：单测覆盖已发布拒绝、tag 拒绝、额外改动拒绝。
+- [x] 12.4 无 session 时 `release:clean` 只清临时目录与陈旧锁；保留历史报告与 npm 缓存。验证：无状态时退出 0，报告与缓存仍存在。
+- [x] 12.5 更新 README 与测试：说明 `release:clean` 恢复到发布前快照，并覆盖取消 → clean 的完整路径。验证：`pnpm test:release` 全绿，README 命令可执行。

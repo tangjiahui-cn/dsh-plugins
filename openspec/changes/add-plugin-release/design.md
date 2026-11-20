@@ -281,14 +281,20 @@ registry=https://registry.npmjs.org/
 - 取消发生在提交前则不写文件；发生在计划确认处时，发布提交已存在但不发布，下次运行会识别当前版本未发布并提供 keep current。
 - 不在 `release` 内自动决定版本号，所有版本变化来自操作者选择。
 
-### 15. 中断状态与清理
+### 15. 中断状态与 clean 恢复
 
-- 状态文件：`.tmp/release/session.json`，记录阶段、`baseHead`、`releaseCommit`、计划、版本、生成文件 hash 与已完成的 tag/发布结果；临时目录 `.tmp/release/session/`。
+- 状态文件：`.tmp/release/session.json`，记录阶段、`baseHead`、`releaseCommit`、包与版本、计划、生成文件 hash 与已完成的 tag/发布结果；临时目录 `.tmp/release/session/`。
 - `release` 获取锁后先读取 session：若当前 `HEAD` 等于 `baseHead` 且脏文件 hash 与记录一致，`git checkout --` 恢复这些文件；否则停止并列出脏文件。确认工作区干净后删除 session 与临时目录，再从头开始。不提供 resume。
-- `release:clean` 只删除 session、临时目录与陈旧 lock，不修改工作区；没有状态时以 0 退出。
+- 在发布确认处取消时，session 保留为 `cancelled`，不再直接删除；这样 `release:clean` 能恢复发布前快照。
+- `release:clean` 的语义是“撤销本次 release 在本地产生的全部改动”：
+  - 没有 session 时只清临时目录与陈旧锁。
+  - 有 session 时先检查 session 里的包版本是否已发布、tag 是否存在；任一存在则拒绝，并提示 `release:withdraw`。
+  - `HEAD` 必须等于 `baseHead` 或 `releaseCommit`；存在额外提交，或工作区有生成文件之外的改动时拒绝。
+  - `HEAD` 等于 `releaseCommit` 时 `git reset --hard baseHead`；等于 `baseHead` 时只恢复 hash 匹配的生成文件。
+  - 成功后删除 session、临时目录与锁；历史报告与 `npm-cache` 保留。
 - 清理不删除 `.tmp/release` 下的历史报告与 `npm-cache`。
 - 重启不依赖 session 恢复：registry 上已存在的版本跳过发布，缺 tag 按第 13 项规则补建；版本已提交但未发布时，版本询问提供 keep current。
-- 选择“清理重来”而非 resume：npm 发布已经按版本幂等，重放状态机比校验半完成状态更简单；代价是中断后需要重新确认计划。
+- 选择“clean 恢复快照”而非 resume：发布前所有本地改动都由本次 release 产生，恢复到 `baseHead` 比校验半完成状态更简单；已发布版本不允许 clean，必须 withdraw。
 
 ### 16. 报告与回滚增加 tag
 
