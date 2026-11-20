@@ -10,13 +10,22 @@ export class ReleaseError extends Error {
 
 /**
  * 运行子命令并收集输出。非零退出不抛错，由调用方判断；
- * 命令无法启动时返回 error。
- * @returns {Promise<{code: number|null, stdout: string, stderr: string, error?: Error}>}
+ * 命令无法启动或超时返回 error/timedOut。
+ * @returns {Promise<{code: number|null, stdout: string, stderr: string, error?: Error, timedOut?: boolean}>}
  */
 export function runCommand(command, args, options = {}) {
-  const { cwd = process.cwd(), env = {}, input } = options
+  const { cwd = process.cwd(), env = {}, input, timeoutMs = 0 } = options
   return new Promise(resolvePromise => {
+    let settled = false
+    let timer = null
     let child
+    const finish = result => {
+      if (settled) return
+      settled = true
+      if (timer !== null) clearTimeout(timer)
+      resolvePromise(result)
+    }
+
     try {
       child = spawn(command, args, {
         cwd,
@@ -24,7 +33,7 @@ export function runCommand(command, args, options = {}) {
         stdio: ['pipe', 'pipe', 'pipe'],
       })
     } catch (error) {
-      resolvePromise({ code: null, stdout: '', stderr: '', error })
+      finish({ code: null, stdout: '', stderr: '', error })
       return
     }
 
@@ -34,8 +43,23 @@ export function runCommand(command, args, options = {}) {
     child.stderr.setEncoding('utf8')
     child.stdout.on('data', chunk => { stdout += chunk })
     child.stderr.on('data', chunk => { stderr += chunk })
-    child.on('error', error => resolvePromise({ code: null, stdout, stderr, error }))
-    child.on('close', code => resolvePromise({ code, stdout, stderr }))
+    child.on('error', error => finish({ code: null, stdout, stderr, error }))
+    child.on('close', code => finish({ code, stdout, stderr }))
+
+    if (timeoutMs > 0) {
+      timer = setTimeout(() => {
+        child.kill('SIGTERM')
+        setTimeout(() => child.kill('SIGKILL'), 1000).unref()
+        finish({
+          code: null,
+          stdout,
+          stderr,
+          timedOut: true,
+          error: new Error(`${command} 超过 ${timeoutMs}ms 未返回`),
+        })
+      }, timeoutMs)
+      timer.unref()
+    }
 
     if (input !== undefined) child.stdin.end(input)
     else child.stdin.end()
@@ -46,7 +70,8 @@ export function runCommand(command, args, options = {}) {
 export async function runOrThrow(command, args, options = {}) {
   const result = await runCommand(command, args, options)
   if (result.error !== undefined) {
-    throw new ReleaseError(`无法执行 ${formatCommand(command, args)}：${result.error.message}`)
+    const prefix = result.timedOut === true ? '执行超时' : '无法执行'
+    throw new ReleaseError(`${prefix} ${formatCommand(command, args)}：${result.error.message}`)
   }
   if (result.code !== 0) {
     const detail = [result.stderr.trim(), result.stdout.trim()].filter(Boolean).join('\n')

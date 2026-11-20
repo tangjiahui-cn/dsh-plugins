@@ -38,8 +38,8 @@ export function createNpmTarget(options = {}) {
   const now = options.now ?? (() => Date.now())
   const defaultEnv = options.env ?? process.env
 
-  async function run(args, { cwd = repoRoot, env = defaultEnv } = {}) {
-    const result = await exec(npmBin, npmArgs(registry, cacheDir, args), { cwd, env })
+  async function run(args, { cwd = repoRoot, env = defaultEnv, timeoutMs = 60000 } = {}) {
+    const result = await exec(npmBin, npmArgs(registry, cacheDir, args), { cwd, env, timeoutMs })
     if (result.error !== undefined) {
       throw new ReleaseError(`无法执行 npm ${args[0]}：${result.error.message}`)
     }
@@ -47,7 +47,7 @@ export function createNpmTarget(options = {}) {
   }
 
   async function checkAuth() {
-    const result = await run(['whoami'])
+    const result = await run(['whoami'], { timeoutMs: 30000 })
     if (result.code !== 0) {
       throw new ReleaseError(
         `npm 认证失败。先执行 npm login --registry ${registry}，或配置 automation token。\n${result.stderr.trim() || result.stdout.trim()}`,
@@ -57,8 +57,8 @@ export function createNpmTarget(options = {}) {
     return { user: user ?? '' }
   }
 
-  async function inspectVersion({ name, version }) {
-    const result = await run(['view', `${name}@${version}`, 'version', 'gitHead', '--json'])
+  async function inspectVersion({ name, version, withTime = true }) {
+    const result = await run(['view', `${name}@${version}`, 'version', 'gitHead', '--json'], { timeoutMs: 30000 })
     if (result.code !== 0) {
       if (isNotFound(result)) return { state: 'absent' }
       throw new ReleaseError(
@@ -82,10 +82,12 @@ export function createNpmTarget(options = {}) {
     }
 
     let publishedAt = null
-    const timeResult = await run(['view', name, 'time', '--json'])
-    if (timeResult.code === 0) {
-      const times = parseJson(timeResult.stdout, null)
-      if (times && typeof times[version] === 'string') publishedAt = times[version]
+    if (withTime) {
+      const timeResult = await run(['view', name, 'time', '--json'], { timeoutMs: 30000 })
+      if (timeResult.code === 0) {
+        const times = parseJson(timeResult.stdout, null)
+        if (times && typeof times[version] === 'string') publishedAt = times[version]
+      }
     }
     return { state: 'published', publishedAt, gitHead }
   }
@@ -93,7 +95,7 @@ export function createNpmTarget(options = {}) {
   async function publish({ name, version, dir, otp }) {
     const args = ['publish', '--access', 'public', '--tag', 'latest', '--json']
     if (otp !== undefined) args.push('--otp', otp)
-    const result = await run(args, { cwd: dir })
+    const result = await run(args, { cwd: dir, timeoutMs: 300000 })
     if (result.code !== 0) {
       throw new ReleaseError(
         `发布 ${name}@${version} 失败：${result.stderr.trim() || result.stdout.trim()}`,
@@ -165,7 +167,7 @@ export function createNpmTarget(options = {}) {
     if (!plan.executable) throw new ReleaseError(plan.note)
     const args = ['unpublish', `${name}@${version}`, '--force']
     if (otp !== undefined) args.push('--otp', otp)
-    const result = await run(args)
+    const result = await run(args, { timeoutMs: 300000 })
     if (result.code !== 0) {
       throw new ReleaseError(
         `撤回 ${name}@${version} 失败：${result.stderr.trim() || result.stdout.trim()}`,
@@ -175,7 +177,7 @@ export function createNpmTarget(options = {}) {
   }
 
   async function distTags(name) {
-    const result = await run(['view', name, 'dist-tags', '--json'])
+    const result = await run(['view', name, 'dist-tags', '--json'], { timeoutMs: 30000 })
     if (result.code !== 0) return {}
     return parseJson(result.stdout, {})
   }

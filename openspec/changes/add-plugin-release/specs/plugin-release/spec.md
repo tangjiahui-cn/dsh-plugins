@@ -290,6 +290,11 @@
 - **WHEN** 用户在发布确认处取消
 - **THEN** 命令不调用发布接口，保留 `cancelled` session，供 `release:clean` 恢复发布前快照
 
+#### Scenario: 存在未完成 session
+
+- **WHEN** 启动时 session 仍存在
+- **THEN** 命令终止并提示先执行 `pnpm release:clean`，不自动恢复、不继续发布
+
 #### Scenario: 初始工作区不干净
 
 - **WHEN** 开始执行时存在未提交改动

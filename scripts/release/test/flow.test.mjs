@@ -5,7 +5,7 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { runClean } from '../clean-command.mjs'
 import { bumpVersion, runRelease } from '../flow.mjs'
 import { localTagCommit, remoteTagCommit } from '../tags.mjs'
-import { readSession } from '../session.mjs'
+import { readSession, writeSession } from '../session.mjs'
 import { headCommit } from '../tags.mjs'
 import { runCommand } from '../util.mjs'
 import { makeIo, makeTempDir, writeExecutable, writeFiles, writeJson } from '../test-support/helpers.mjs'
@@ -227,5 +227,25 @@ test('release 在计划确认处取消后 clean 恢复快照', async () => {
   assert.equal(cleanCode, 0)
   assert.equal((await headCommit({ repoRoot: data.root })).trim(), data.commit)
   assert.equal(await readSession(data.root), null)
+})
+
+test('存在未完成 session 时 release 要求先 clean', async () => {
+  const data = await makeRepo()
+  await writeSession({ stage: 'cancelled', baseHead: data.commit, packages: [] }, data.root)
+  await assert.rejects(
+    () => runRelease({
+      repoRoot: data.root,
+      npmBin: data.fakeBin,
+      pnpmBin: data.fakeBin,
+      gitBin: 'git',
+      targetAdapter: data.target,
+      packages: ['@tjh/dsh-plugin-alpha'],
+      skipChecks: true,
+      yes: true,
+      io: io([]),
+    }),
+    /先执行 pnpm release:clean/,
+  )
+  assert.deepEqual(data.publishedList, [])
 })
 

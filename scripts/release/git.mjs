@@ -5,7 +5,8 @@ import { ReleaseError, runCommand } from './util.mjs'
 async function git(args, options) {
   const result = await runCommand(options.gitBin ?? defaultGitBin, args, {
     cwd: options.repoRoot,
-    env: options.env,
+    env: { GIT_TERMINAL_PROMPT: '0', ...options.env },
+    timeoutMs: 30000,
   })
   if (result.error !== undefined) {
     throw new ReleaseError(`无法执行 git：${result.error.message}`)

@@ -91,3 +91,10 @@
 - [x] 12.3 `release:clean` 在执行前检查包版本与 tag；任一已发布或 tag 存在时拒绝并提示 `release:withdraw`；额外提交或生成文件之外的改动时拒绝。验证：单测覆盖已发布拒绝、tag 拒绝、额外改动拒绝。
 - [x] 12.4 无 session 时 `release:clean` 只清临时目录与陈旧锁；保留历史报告与 npm 缓存。验证：无状态时退出 0，报告与缓存仍存在。
 - [x] 12.5 更新 README 与测试：说明 `release:clean` 恢复到发布前快照，并覆盖取消 → clean 的完整路径。验证：`pnpm test:release` 全绿，README 命令可执行。
+
+## 13. 失败即停与远程超时
+
+- [x] 13.1 `release` 启动时发现 session 直接终止并要求先 `release:clean`，不自动恢复或继续。验证：假 TTY 测试断言命令在读取包之前失败。
+- [x] 13.2 `release` 的发布阶段返回非零时停止后续包与 tag-only 修复，保留 session。验证：假目标第 2 个包失败时第 3 个与 tag-only 均未执行。
+- [x] 13.3 发布预检调用 `inspectVersion` 时跳过 `time` 查询；撤回仍读取发布时间。验证：假 npm 断言发布预检只有 `version gitHead`，撤回有 `time`。
+- [x] 13.4 远程 git、npm、pnpm 命令设置超时与 `GIT_TERMINAL_PROMPT=0`；超时输出明确原因并停止。验证：`runCommand` 超时单测通过，远程 tag 查询 15 秒内失败而不是挂起。

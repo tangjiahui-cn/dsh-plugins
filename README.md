@@ -32,8 +32,9 @@ dsh plugin --profile <profile> add @tjh/dsh-plugin-useage
 pnpm release
 ```
 
-取消后恢复到发布前：
+失败或取消后恢复到发布前，再重新发布：
 
 ```sh
 pnpm release:clean
+pnpm release
 ```

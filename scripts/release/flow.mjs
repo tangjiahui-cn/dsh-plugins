@@ -14,7 +14,6 @@ import {
   clearSession,
   hashFiles,
   readSession,
-  restoreGeneratedFiles,
   writeSession,
 } from './session.mjs'
 import { assertOfficialSource } from './source.mjs'
@@ -108,7 +107,7 @@ function selectionLabel(state) {
 }
 
 async function classify(pkg, target, options) {
-  const state = await target.inspectVersion({ name: pkg.name, version: pkg.version })
+  const state = await target.inspectVersion({ name: pkg.name, version: pkg.version, withTime: false })
   if (state.state === 'absent') return { kind: 'unpublished', state }
   const tags = await inspectTagState(pkg, options)
   return { kind: 'tag-only', state, tags }
@@ -125,9 +124,9 @@ export async function runRelease(options = {}) {
 
   const prior = await readSession(repoRoot)
   if (prior !== null) {
-    await restoreGeneratedFiles({ repoRoot, session: prior, gitBin })
-    await clearSession(repoRoot)
-    io.log('已清理上次中断的 session 与临时目录。')
+    throw new ReleaseError(
+      `上次发布未完成（阶段：${prior.stage}）。先执行 pnpm release:clean 恢复到发布前快照，再重新运行 pnpm release。`,
+    )
   }
 
   const status = await workingTreeStatus({ repoRoot, gitBin })
@@ -268,6 +267,10 @@ export async function runRelease(options = {}) {
         return 1
       }
       throw error
+    }
+    if (exitCode !== 0) {
+      io.error('发布未完成，已停止后续步骤。按报告处理已发布版本后，执行 pnpm release:clean 再重新发布。')
+      return exitCode
     }
   }
 

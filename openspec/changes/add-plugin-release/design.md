@@ -165,7 +165,7 @@ npm publish --access public --registry https://registry.npmjs.org/ --tag latest
  * @property {string} id
  * @property {string} registry
  * @property {() => Promise<{ user: string }>} checkAuth
- * @property {(pkg: { name: string, version: string }) => Promise<
+ * @property {(pkg: { name: string, version: string, withTime?: boolean }) => Promise<
  *   { state: 'absent' } |
  *   { state: 'published', publishedAt: string | null, gitHead: string | null }
  * >} inspectVersion
@@ -179,7 +179,7 @@ npm publish --access public --registry https://registry.npmjs.org/ --tag latest
 ```
 
 - `scripts/release/targets/index.mjs` 导出 `{ npm }` 与 `getTarget(id)`。
-- npm 适配器负责 72 小时规则、`--force`、registry 与缓存参数；编排层不拼 npm 命令。
+- npm 适配器负责 72 小时规则、`--force`、registry 与缓存参数；编排层不拼 npm 命令。发布预检传 `withTime: false`，避免拉取只供撤回使用的发布时间。
 - 后续市场新增 `scripts/release/targets/<id>.mjs`，实现同一接口，编排、校验、确认、报告不改。市场的准备动作（例如额外 manifest）通过适配器可选的 `prepare(pkg)` 钩子实现，不进入编排层。
 
 ### 9. `plugins/useage` 清单修正
@@ -262,7 +262,7 @@ registry=https://registry.npmjs.org/
 
 `release` 是一个顺序状态机，每步失败即停止并保留 session：
 
-1. 获取 `.tmp/release/lock`（陈旧锁先清除）；读取 session（如存在）并清理陈旧状态；要求工作区干净；检查 official source、origin、npm 认证。
+1. 获取 `.tmp/release/lock`（陈旧锁先清除）；若 session 存在，终止并提示先执行 `release:clean`；否则要求工作区干净，检查 official source、origin、npm 认证。
 2. 发现子包，按当前版本查 registry 与 tag 状态，分为：已完成、只补 tag（none/local-only/remote-only）、tag 冲突、未发布。
 3. 让操作者选择要处理的包，默认全选可处理的包。
 4. 对未发布的包逐个询问版本：patch、minor、major、custom 或 keep current；显示旧版本与新版本；未发布且已有版本号的包默认 keep current。已发布包不询问版本。
@@ -276,15 +276,16 @@ registry=https://registry.npmjs.org/
 - 只补 tag 的包走 `release:tag` 的目标解析与状态规则；无法定位发布 commit 时停止，不使用 `HEAD`。
 - 版本号与 changelog 没有变化时跳过提交；版本未发布时继续预检与发布，避免重启后重复提交。
 - 已发布版本缺 changelog 时完成 tag 修复并告警；本次新发布版本缺 changelog 时在发布前失败。
+- `runPublish` 返回非零后立即停止，不继续 tag-only 修复或后续包。
 - 初始工作区必须干净，保证第 7 步只提交发布文件；提交失败时不发布。
-- 中断发生在提交前且文件 hash 匹配时，启动阶段先恢复文件；不匹配则停止。
+- `release` 不自动恢复或继续未完成的 session；恢复统一由 `release:clean` 完成。
 - 取消发生在提交前则不写文件；发生在计划确认处时，发布提交已存在但不发布，下次运行会识别当前版本未发布并提供 keep current。
 - 不在 `release` 内自动决定版本号，所有版本变化来自操作者选择。
 
 ### 15. 中断状态与 clean 恢复
 
 - 状态文件：`.tmp/release/session.json`，记录阶段、`baseHead`、`releaseCommit`、包与版本、计划、生成文件 hash 与已完成的 tag/发布结果；临时目录 `.tmp/release/session/`。
-- `release` 获取锁后先读取 session：若当前 `HEAD` 等于 `baseHead` 且脏文件 hash 与记录一致，`git checkout --` 恢复这些文件；否则停止并列出脏文件。确认工作区干净后删除 session 与临时目录，再从头开始。不提供 resume。
+- `release` 获取锁后若发现 session，直接终止并提示先执行 `release:clean`；不自动恢复、不继续发布。
 - 在发布确认处取消时，session 保留为 `cancelled`，不再直接删除；这样 `release:clean` 能恢复发布前快照。
 - `release:clean` 的语义是“撤销本次 release 在本地产生的全部改动”：
   - 没有 session 时只清临时目录与陈旧锁。

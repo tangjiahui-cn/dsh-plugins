@@ -32,7 +32,7 @@ function credentialKey(key) {
 }
 
 async function commandRegistry(command, args, options) {
-  const result = await runCommand(command, args, { cwd: options.repoRoot, env: options.env })
+  const result = await runCommand(command, args, { cwd: options.repoRoot, env: options.env, timeoutMs: 30000 })
   if (result.error !== undefined) {
     throw new ReleaseError(`无法执行 ${command} ${args.join(' ')}：${result.error.message}`)
   }

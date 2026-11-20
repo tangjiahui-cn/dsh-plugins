@@ -42,7 +42,7 @@ export async function runClean(options = {}) {
 
   const target = options.targetAdapter ?? getTarget(options.targetId)
   for (const pkg of session.packages ?? []) {
-    const state = await target.inspectVersion({ name: pkg.name, version: pkg.version })
+    const state = await target.inspectVersion({ name: pkg.name, version: pkg.version, withTime: false })
     if (state.state === 'published') {
       throw new ReleaseError(
         `${pkg.name}@${pkg.version} 已发布，不能恢复到发布前快照；先执行 pnpm release:withdraw -- ${pkg.name}@${pkg.version}`,

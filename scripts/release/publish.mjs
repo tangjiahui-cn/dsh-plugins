@@ -111,7 +111,7 @@ export async function publishAll({
       let status = 'failed'
       let detail = error.message
       try {
-        const state = await target.inspectVersion({ name, version })
+        const state = await target.inspectVersion({ name, version, withTime: false })
         if (state.state === 'published') {
           status = 'published-uncertain'
           detail = `${error.message}（查询显示该版本已存在）`
@@ -244,6 +244,7 @@ export async function runPublish(options = {}) {
       const state = await target.inspectVersion({
         name: item.pkg.name,
         version: item.pkg.version,
+        withTime: false,
       })
       if (state.state === 'published') {
         throw new ReleaseError(

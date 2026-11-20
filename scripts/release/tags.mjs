@@ -8,13 +8,19 @@ export function tagName(pkg) {
   return `${pkg.name}@${pkg.version}`
 }
 
+function gitEnv(options) {
+  return { GIT_TERMINAL_PROMPT: '0', ...options.env }
+}
+
 async function git(args, options = {}) {
   const result = await runCommand(options.gitBin ?? defaultGitBin, args, {
     cwd: options.repoRoot ?? defaultRepoRoot,
-    env: options.env,
+    env: gitEnv(options),
+    timeoutMs: options.timeoutMs ?? 60000,
   })
   if (result.error !== undefined) {
-    throw new ReleaseError(`无法执行 git ${args.join(' ')}：${result.error.message}`)
+    const prefix = result.timedOut === true ? 'git 命令超时' : '无法执行 git'
+    throw new ReleaseError(`${prefix} ${args.join(' ')}：${result.error.message}`)
   }
   if (result.code !== 0) {
     throw new ReleaseError(
@@ -24,11 +30,19 @@ async function git(args, options = {}) {
   return result.stdout
 }
 
-function gitOptional(args, options = {}) {
-  return runCommand(options.gitBin ?? defaultGitBin, args, {
+async function gitOptional(args, options = {}) {
+  const result = await runCommand(options.gitBin ?? defaultGitBin, args, {
     cwd: options.repoRoot ?? defaultRepoRoot,
-    env: options.env,
+    env: gitEnv(options),
+    timeoutMs: options.timeoutMs ?? 60000,
   })
+  if (result.timedOut === true) {
+    throw new ReleaseError(`git 命令超时 ${args.join(' ')}：${result.error.message}`)
+  }
+  if (result.error !== undefined) {
+    throw new ReleaseError(`无法执行 git ${args.join(' ')}：${result.error.message}`)
+  }
+  return result
 }
 
 export async function headCommit(options = {}) {
@@ -49,7 +63,10 @@ export async function localTagCommit(tag, options = {}) {
 }
 
 export async function remoteTagCommit(tag, options = {}) {
-  const output = await git(['ls-remote', '--tags', options.remote ?? 'origin'], options)
+  const output = await git(
+    ['ls-remote', '--tags', options.remote ?? 'origin'],
+    { ...options, timeoutMs: options.remoteTimeoutMs ?? 15000 },
+  )
   let object = null
   let peeled = null
   for (const line of output.split('\n')) {
@@ -78,12 +95,19 @@ export async function createAnnotatedTag({ tag, commit, repoRoot, gitBin, env })
   await git(['tag', '-a', tag, commit, '-m', tag], { repoRoot, gitBin, env })
 }
 
-export async function pushTag({ tag, remote = 'origin', retries = 2, repoRoot, gitBin, env, sleepFn = sleep }) {
+export async function pushTag({ tag, remote = 'origin', retries = 2, repoRoot, gitBin, env, sleepFn = sleep, pushTimeoutMs = 120000 }) {
   let lastError
   for (let attempt = 0; attempt <= retries; attempt += 1) {
-    const result = await gitOptional(['push', remote, tag], { repoRoot, gitBin, env })
+    const result = await gitOptional(['push', remote, tag], {
+      repoRoot,
+      gitBin,
+      env,
+      timeoutMs: pushTimeoutMs,
+    })
     if (result.code === 0) return
-    lastError = result.stderr.trim() || result.stdout.trim()
+    lastError = result.timedOut === true
+      ? result.error.message
+      : result.stderr.trim() || result.stdout.trim()
     if (attempt < retries) await sleepFn(1000)
   }
   throw new ReleaseError(`tag push 失败：${tag}\n${lastError}`)
@@ -99,7 +123,10 @@ export async function deleteLocalTag(tag, options = {}) {
 export async function deleteRemoteTag(tag, options = {}) {
   const current = await remoteTagCommit(tag, options)
   if (current === null) return false
-  await git(['push', options.remote ?? 'origin', `:refs/tags/${tag}`], options)
+  await git(
+    ['push', options.remote ?? 'origin', `:refs/tags/${tag}`],
+    { ...options, timeoutMs: options.pushTimeoutMs ?? 120000 },
+  )
   return true
 }
 
@@ -185,7 +212,10 @@ export async function repairTag({ pkg, targetCommit, ...options }) {
     if (remote !== targetCommit) {
       throw new ReleaseError(`远程 tag 冲突：${tag} 指向 ${remote}，期望 ${targetCommit}`)
     }
-    await git(['fetch', options.remote ?? 'origin', 'tag', tag], options)
+    await git(
+      ['fetch', options.remote ?? 'origin', 'tag', tag],
+      { ...options, timeoutMs: options.remoteTimeoutMs ?? 30000 },
+    )
     const fetched = await localTagCommit(tag, options)
     if (fetched !== targetCommit) {
       throw new ReleaseError(`fetch 后本地 tag 不匹配：${tag} 指向 ${fetched}`)

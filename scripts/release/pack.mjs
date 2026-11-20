@@ -19,7 +19,7 @@ export async function packDryRun(pkg, options = {}) {
   const result = await runCommand(
     npmBin,
     ['pack', '--dry-run', '--json', '--cache', cacheDir],
-    { cwd: pkg.dir, env: options.env },
+    { cwd: pkg.dir, env: options.env, timeoutMs: 120000 },
   )
   if (result.error !== undefined) {
     throw new ReleaseError(`无法执行 npm pack：${result.error.message}`)

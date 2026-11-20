@@ -32,7 +32,7 @@ export async function runTag(options = {}) {
     )
   }
 
-  const state = await target.inspectVersion({ name, version })
+  const state = await target.inspectVersion({ name, version, withTime: false })
   if (state.state !== 'published') {
     throw new ReleaseError(`${name}@${version} 未发布，不能补 tag`)
   }

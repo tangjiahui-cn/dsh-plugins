@@ -27,7 +27,8 @@ const ALLOWED_RELEASE_FILES = new Set(['package.json', 'CHANGELOG.md'])
 async function git(args, options = {}) {
   const result = await runCommand(options.gitBin ?? defaultGitBin, args, {
     cwd: options.repoRoot ?? defaultRepoRoot,
-    env: options.env,
+    env: { GIT_TERMINAL_PROMPT: '0', ...options.env },
+    timeoutMs: 60000,
   })
   if (result.error !== undefined) {
     throw new ReleaseError(`无法执行 git ${args.join(' ')}：${result.error.message}`)
@@ -43,7 +44,8 @@ async function git(args, options = {}) {
 async function gitOptional(args, options = {}) {
   return runCommand(options.gitBin ?? defaultGitBin, args, {
     cwd: options.repoRoot ?? defaultRepoRoot,
-    env: options.env,
+    env: { GIT_TERMINAL_PROMPT: '0', ...options.env },
+    timeoutMs: 60000,
   })
 }
 

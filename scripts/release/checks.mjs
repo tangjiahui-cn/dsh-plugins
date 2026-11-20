@@ -11,7 +11,7 @@ export async function runPackageChecks(pkg, options = {}) {
     const result = await runCommand(
       pnpmBin,
       ['--filter', pkg.name, 'run', '--if-present', script],
-      { cwd: repoRoot, env: options.env },
+      { cwd: repoRoot, env: options.env, timeoutMs: 300000 },
     )
     if (result.error !== undefined) {
       throw new ReleaseError(`无法执行 pnpm ${script}（${pkg.name}）：${result.error.message}`)
