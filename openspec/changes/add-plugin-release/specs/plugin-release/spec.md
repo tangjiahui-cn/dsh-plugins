@@ -27,7 +27,7 @@
 
 ### Requirement: 仓库与发布只使用官方 npm 源
 
-仓库根 MUST 提供 `.npmrc`，把 `registry` 与 `@tjh` scope 固定为 `https://registry.npmjs.org/`，且 MUST NOT 包含认证凭据。发布命令 MUST 在发布前验证根 `.npmrc`、实际生效的 npm 与 pnpm registry、以及 `pnpm-lock.yaml` 中所有 `tarball` 地址都指向官方源；任一不符时终止且不发布。
+仓库根 MUST 提供 `.npmrc`，把 `registry` 与 `@tjhaaa` scope 固定为 `https://registry.npmjs.org/`，且 MUST NOT 包含认证凭据。发布命令 MUST 在发布前验证根 `.npmrc`、实际生效的 npm 与 pnpm registry、以及 `pnpm-lock.yaml` 中所有 `tarball` 地址都指向官方源；任一不符时终止且不发布。
 
 #### Scenario: 项目配置固定官方源
 
@@ -51,7 +51,7 @@
 
 ### Requirement: 可发布子包满足 npm 安装契约
 
-发布前 MUST 校验每个候选子包：名称为 `@tjh/dsh-plugin-*`、版本为合法 semver、未标记 `private`、`files` 覆盖入口与全部运行时文件、`dsh.bundle.patch` 指向存在的文件、导出的 locale 与 icon 文件存在、`publishConfig.access` 为 `public`。任一包校验失败时终止本次发布。
+发布前 MUST 校验每个候选子包：名称为 `@tjhaaa/dsh-plugin-*`、版本为合法 semver、未标记 `private`、`files` 覆盖入口与全部运行时文件、`dsh.bundle.patch` 指向存在的文件、导出的 locale 与 icon 文件存在、`publishConfig.access` 为 `public`。任一包校验失败时终止本次发布。
 
 #### Scenario: 子包仍标记 private
 

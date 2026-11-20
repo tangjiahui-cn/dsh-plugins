@@ -23,12 +23,12 @@ async function makeRepo({ published = false, changelog = false, gitHead = true }
   const root = await makeTempDir()
   const dir = join(root, 'plugins', 'alpha')
   await writeFiles(root, {
-    '.npmrc': `registry=${official}\n@tjh:registry=${official}\n`,
+    '.npmrc': `registry=${official}\n@tjhaaa:registry=${official}\n`,
     'pnpm-lock.yaml': 'lockfileVersion: 9.0\n',
     '.gitignore': '.tmp/\n',
   })
   await writeJson(join(dir, 'package.json'), {
-    name: '@tjh/dsh-plugin-alpha',
+    name: '@tjhaaa/dsh-plugin-alpha',
     version: '0.1.0',
     license: 'MIT',
     repository: { type: 'git', url: 'https://example.test/repo.git', directory: 'plugins/alpha' },
@@ -108,16 +108,16 @@ test('release 一键流程：问版本、生成 changelog、提交、发布、�
     pnpmBin: data.fakeBin,
     gitBin: 'git',
     targetAdapter: data.target,
-    packages: ['@tjh/dsh-plugin-alpha'],
+    packages: ['@tjhaaa/dsh-plugin-alpha'],
     skipChecks: true,
     yes: true,
     io: output,
   })
   assert.equal(code, 0)
-  assert.deepEqual(data.publishedList, ['@tjh/dsh-plugin-alpha@0.1.0'])
+  assert.deepEqual(data.publishedList, ['@tjhaaa/dsh-plugin-alpha@0.1.0'])
   const changelog = await readFile(join(data.dir, 'CHANGELOG.md'), 'utf8')
   assert.match(changelog, /## 0\.1\.0/)
-  const tag = '@tjh/dsh-plugin-alpha@0.1.0'
+  const tag = '@tjhaaa/dsh-plugin-alpha@0.1.0'
   assert.ok(await localTagCommit(tag, { repoRoot: data.root }))
   assert.ok(await remoteTagCommit(tag, { repoRoot: data.root }))
 })
@@ -131,14 +131,14 @@ test('release 只补 tag：不重新发布、不提交版本', async () => {
     pnpmBin: data.fakeBin,
     gitBin: 'git',
     targetAdapter: data.target,
-    packages: ['@tjh/dsh-plugin-alpha'],
+    packages: ['@tjhaaa/dsh-plugin-alpha'],
     skipChecks: true,
     yes: true,
     io: output,
   })
   assert.equal(code, 0)
   assert.deepEqual(data.publishedList, [])
-  assert.ok(await localTagCommit('@tjh/dsh-plugin-alpha@0.1.0', { repoRoot: data.root }))
+  assert.ok(await localTagCommit('@tjhaaa/dsh-plugin-alpha@0.1.0', { repoRoot: data.root }))
 })
 
 test('release 初始工作区不干净时终止', async () => {
@@ -151,7 +151,7 @@ test('release 初始工作区不干净时终止', async () => {
       pnpmBin: data.fakeBin,
       gitBin: 'git',
       targetAdapter: data.target,
-      packages: ['@tjh/dsh-plugin-alpha'],
+      packages: ['@tjhaaa/dsh-plugin-alpha'],
       skipChecks: true,
       yes: true,
       io: io([]),
@@ -170,7 +170,7 @@ test('release 取消版本询问时不写文件、不发布', async () => {
       pnpmBin: data.fakeBin,
       gitBin: 'git',
       targetAdapter: data.target,
-      packages: ['@tjh/dsh-plugin-alpha'],
+      packages: ['@tjhaaa/dsh-plugin-alpha'],
       skipChecks: true,
       yes: true,
       io: io(['q']),
@@ -189,7 +189,7 @@ test('release 已发布但无法定位 tag commit 时停止', async () => {
       pnpmBin: data.fakeBin,
       gitBin: 'git',
       targetAdapter: data.target,
-      packages: ['@tjh/dsh-plugin-alpha'],
+      packages: ['@tjhaaa/dsh-plugin-alpha'],
       skipChecks: true,
       yes: true,
       io: io([]),
@@ -208,7 +208,7 @@ test('release 在计划确认处取消后 clean 恢复快照', async () => {
     pnpmBin: data.fakeBin,
     gitBin: 'git',
     targetAdapter: data.target,
-    packages: ['@tjh/dsh-plugin-alpha'],
+    packages: ['@tjhaaa/dsh-plugin-alpha'],
     skipChecks: true,
     yes: false,
     io: output,
@@ -239,7 +239,7 @@ test('存在未完成 session 时 release 要求先 clean', async () => {
       pnpmBin: data.fakeBin,
       gitBin: 'git',
       targetAdapter: data.target,
-      packages: ['@tjh/dsh-plugin-alpha'],
+      packages: ['@tjhaaa/dsh-plugin-alpha'],
       skipChecks: true,
       yes: true,
       io: io([]),

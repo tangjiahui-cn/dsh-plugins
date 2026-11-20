@@ -11,21 +11,21 @@ const data = {
   startedAt: '2026-11-20T01:00:00.000Z',
   finishedAt: '2026-11-20T01:01:00.000Z',
   exitCode: 1,
-  plan: [{ name: '@tjh/dsh-plugin-useage', version: '0.1.0', relDir: 'plugins/useage', order: 1 }],
+  plan: [{ name: '@tjhaaa/dsh-plugin-useage', version: '0.1.0', relDir: 'plugins/useage', order: 1 }],
   results: [
     {
-      name: '@tjh/dsh-plugin-useage',
+      name: '@tjhaaa/dsh-plugin-useage',
       version: '0.1.0',
       status: 'published',
       integrity: 'sha512-abc',
-      url: 'https://www.npmjs.com/package/@tjh/dsh-plugin-useage/v/0.1.0',
+      url: 'https://www.npmjs.com/package/@tjhaaa/dsh-plugin-useage/v/0.1.0',
       releaseCommit: 'abc123',
-      tag: '@tjh/dsh-plugin-useage@0.1.0',
+      tag: '@tjhaaa/dsh-plugin-useage@0.1.0',
       tagPushed: true,
       changelogMissing: false,
     },
     {
-      name: '@tjh/dsh-plugin-other',
+      name: '@tjhaaa/dsh-plugin-other',
       version: '1.0.0',
       status: 'failed',
       error: 'boom',
@@ -33,7 +33,7 @@ const data = {
     },
   ],
   rollback: {
-    commands: ["npm unpublish '@tjh/dsh-plugin-useage@0.1.0' --force"],
+    commands: ["npm unpublish '@tjhaaa/dsh-plugin-useage@0.1.0' --force"],
     note: '命令未执行',
   },
 }
@@ -56,7 +56,7 @@ test('成功与失败结果写入三种文件，rollback.sh 可执行且不自�
   assert.match(report.rollback.commands[0], /npm unpublish/)
 
   const summary = await readFile(join(directory, 'summary.md'), 'utf8')
-  assert.match(summary, /@tjh\/dsh-plugin-useage/)
+  assert.match(summary, /@tjhaaa\/dsh-plugin-useage/)
   assert.match(summary, /npm unpublish/)
   assert.match(summary, /已推送/)
   assert.match(summary, /缺失/)
@@ -75,7 +75,7 @@ test('没有可撤销版本时脚本只输出说明', async () => {
   await writeReport({
     ...data,
     directory,
-    results: [{ name: '@tjh/dsh-plugin-useage', version: '0.1.0', status: 'failed', error: 'x' }],
+    results: [{ name: '@tjhaaa/dsh-plugin-useage', version: '0.1.0', status: 'failed', error: 'x' }],
     rollback: { commands: [], note: '无' },
   })
   const script = await readFile(join(directory, 'rollback.sh'), 'utf8')

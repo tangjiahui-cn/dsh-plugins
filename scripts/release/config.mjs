@@ -8,7 +8,7 @@ export const repoRoot = resolve(fileURLToPath(new URL('../../', import.meta.url)
 export const registry = 'https://registry.npmjs.org/'
 
 /** 子包名称前缀；只有匹配该前缀的 plugins/* 才进入发布候选。 */
-export const pluginPrefix = '@tjh/dsh-plugin-'
+export const pluginPrefix = '@tjhaaa/dsh-plugin-'
 
 /** 子包所在目录。 */
 export const pluginsDir = resolve(repoRoot, 'plugins')

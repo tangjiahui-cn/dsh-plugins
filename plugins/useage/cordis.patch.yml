@@ -1,6 +1,6 @@
 - insert:
     - id: useage
-      name: '@tjh/dsh-plugin-useage'
+      name: '@tjhaaa/dsh-plugin-useage'
       config:
         currency: CNY
         timezone: Asia/Shanghai

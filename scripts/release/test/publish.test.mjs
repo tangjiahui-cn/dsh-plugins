@@ -17,7 +17,7 @@ async function git(root, args) {
 }
 
 async function makePlugin(root, short) {
-  const name = `@tjh/dsh-plugin-${short}`
+  const name = `@tjhaaa/dsh-plugin-${short}`
   const dir = join(root, 'plugins', short)
   await writeJson(join(dir, 'package.json'), {
     name,
@@ -40,7 +40,7 @@ async function makePlugin(root, short) {
 async function makeRepo() {
   const root = await makeTempDir()
   await writeFiles(root, {
-    '.npmrc': `registry=${official}\n@tjh:registry=${official}\n`,
+    '.npmrc': `registry=${official}\n@tjhaaa:registry=${official}\n`,
     'pnpm-lock.yaml': 'lockfileVersion: 9.0\n',
   })
   for (const short of ['alpha', 'beta', 'gamma']) await makePlugin(root, short)
@@ -134,7 +134,7 @@ test('dry-run 只输出计划，不调用 publish', async () => {
   assert.equal(code, 0)
   assert.equal(target.published.length, 0)
   assert.match(io.logs.join('\n'), /发布计划/)
-  assert.match(io.logs.join('\n'), /@tjh\/dsh-plugin-alpha@0\.1\.0/)
+  assert.match(io.logs.join('\n'), /@tjhaaa\/dsh-plugin-alpha@0\.1\.0/)
 })
 
 test('顺序发布成功并写报告', async () => {
@@ -144,9 +144,9 @@ test('顺序发布成功并写报告', async () => {
   const code = await runPublish(baseOptions(data, io, { targetAdapter: target }))
   assert.equal(code, 0)
   assert.deepEqual(target.published, [
-    '@tjh/dsh-plugin-alpha@0.1.0',
-    '@tjh/dsh-plugin-beta@0.1.0',
-    '@tjh/dsh-plugin-gamma@0.1.0',
+    '@tjhaaa/dsh-plugin-alpha@0.1.0',
+    '@tjhaaa/dsh-plugin-beta@0.1.0',
+    '@tjhaaa/dsh-plugin-gamma@0.1.0',
   ])
   const report = JSON.parse(await readFile(join(data.root, 'report', 'report.json'), 'utf8'))
   assert.equal(report.exitCode, 0)
@@ -160,11 +160,11 @@ test('发布失败但版本已存在时标记为 published-uncertain', async () 
     registry: official,
     async publish({ name, version, dir }) {
       calls.push({ name, version, dir })
-      if (name === '@tjh/dsh-plugin-beta') throw new Error('timeout')
+      if (name === '@tjhaaa/dsh-plugin-beta') throw new Error('timeout')
       return { integrity: null, url: 'https://www.npmjs.com/package/x' }
     },
     async inspectVersion({ name }) {
-      return name === '@tjh/dsh-plugin-beta'
+      return name === '@tjhaaa/dsh-plugin-beta'
         ? { state: 'published', publishedAt: '2026-11-20T00:00:00.000Z' }
         : { state: 'absent' }
     },
@@ -174,7 +174,7 @@ test('发布失败但版本已存在时标记为 published-uncertain', async () 
   }
   const plan = ['alpha', 'beta', 'gamma'].map(short => ({
     pkg: {
-      name: `@tjh/dsh-plugin-${short}`,
+      name: `@tjhaaa/dsh-plugin-${short}`,
       version: '1.0.0',
       dir: `/repo/plugins/${short}`,
     },
@@ -193,7 +193,7 @@ test('第 2 个包失败时停止，第三包标为未尝试并生成回滚命�
   const data = await makeRepo()
   const io = makeIo()
   const code = await runPublish(baseOptions(data, io, {
-    targetAdapter: fakeTarget('@tjh/dsh-plugin-beta'),
+    targetAdapter: fakeTarget('@tjhaaa/dsh-plugin-beta'),
   }))
   assert.equal(code, 1)
   const report = JSON.parse(await readFile(join(data.root, 'report', 'report.json'), 'utf8'))
@@ -202,14 +202,14 @@ test('第 2 个包失败时停止，第三包标为未尝试并生成回滚命�
     'failed',
     'not-attempted',
   ])
-  assert.match(report.rollback.commands[0], /unpublish '@tjh\/dsh-plugin-alpha@0\.1\.0'/)
+  assert.match(report.rollback.commands[0], /unpublish '@tjhaaa\/dsh-plugin-alpha@0\.1\.0'/)
   const script = await readFile(join(data.root, 'report', 'rollback.sh'), 'utf8')
-  assert.match(script, /unpublish '@tjh\/dsh-plugin-alpha@0\.1\.0'/)
+  assert.match(script, /unpublish '@tjhaaa\/dsh-plugin-alpha@0\.1\.0'/)
 })
 
 test('发布前发现 tag 已存在时终止', async () => {
   const data = await makeRepo()
-  await git(data.root, ['tag', '@tjh/dsh-plugin-alpha@0.1.0'])
+  await git(data.root, ['tag', '@tjhaaa/dsh-plugin-alpha@0.1.0'])
   await assert.rejects(
     () => runPublish(baseOptions(data, makeIo())),
     /本地 tag 已存在/,

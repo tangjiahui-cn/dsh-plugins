@@ -19,7 +19,7 @@ async function git(root, args) {
 }
 
 async function makePlugin(root, short) {
-  const name = `@tjh/dsh-plugin-${short}`
+  const name = `@tjhaaa/dsh-plugin-${short}`
   const dir = join(root, 'plugins', short)
   await writeJson(join(dir, 'package.json'), {
     name,
@@ -44,7 +44,7 @@ async function makeRepo(shorts, failName = '') {
   const stateFile = join(root, 'published.json')
   const binRoot = await makeTempDir('dsh-release-e2e-bin-')
   await writeFiles(root, {
-    '.npmrc': `registry=${official}\n@tjh:registry=${official}\n`,
+    '.npmrc': `registry=${official}\n@tjhaaa:registry=${official}\n`,
     'pnpm-lock.yaml': 'lockfileVersion: 9.0\n',
     'published.json': '{}\n',
   })
@@ -156,10 +156,10 @@ test('假 npm 端到端：多包发布成功', async () => {
   const report = JSON.parse(await readFile(join(data.root, 'report', 'report.json'), 'utf8'))
   assert.deepEqual(report.results.map(result => result.status), ['published', 'published'])
   const state = JSON.parse(await readFile(join(data.root, 'published.json'), 'utf8'))
-  assert.ok(state['@tjh/dsh-plugin-alpha@0.1.0'])
-  assert.ok(state['@tjh/dsh-plugin-beta@0.1.0'])
+  assert.ok(state['@tjhaaa/dsh-plugin-alpha@0.1.0'])
+  assert.ok(state['@tjhaaa/dsh-plugin-beta@0.1.0'])
   for (const short of ['alpha', 'beta']) {
-    const tag = `@tjh/dsh-plugin-${short}@0.1.0`
+    const tag = `@tjhaaa/dsh-plugin-${short}@0.1.0`
     assert.ok(await localTagCommit(tag, { repoRoot: data.root }))
     assert.ok(await remoteTagCommit(tag, { repoRoot: data.root }))
   }
@@ -167,7 +167,7 @@ test('假 npm 端到端：多包发布成功', async () => {
 })
 
 test('假 npm 端到端：第 2 个失败并生成回滚命令', async () => {
-  const data = await makeRepo(['alpha', 'beta', 'gamma'], '@tjh/dsh-plugin-beta')
+  const data = await makeRepo(['alpha', 'beta', 'gamma'], '@tjhaaa/dsh-plugin-beta')
   const target = createNpmTarget({
     npmBin: data.fakeNpm,
     repoRoot: data.root,
@@ -193,6 +193,6 @@ test('假 npm 端到端：第 2 个失败并生成回滚命令', async () => {
     'failed',
     'not-attempted',
   ])
-  assert.match(report.rollback.commands[0], /npm unpublish '@tjh\/dsh-plugin-alpha@0\.1\.0'/)
+  assert.match(report.rollback.commands[0], /npm unpublish '@tjhaaa\/dsh-plugin-alpha@0\.1\.0'/)
   assert.ok(report.rollback.commands.some(command => command.includes('git tag -d')))
 })

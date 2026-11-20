@@ -9,7 +9,7 @@ const official = 'https://registry.npmjs.org/'
 async function makeRepo() {
   const root = await makeTempDir()
   await writeJson(join(root, 'plugins', 'alpha', 'package.json'), {
-    name: '@tjh/dsh-plugin-alpha',
+    name: '@tjhaaa/dsh-plugin-alpha',
     version: '1.0.0',
   })
   return root
@@ -28,7 +28,7 @@ async function fixture(overrides = {}) {
     async withdrawPlan() {
       return overrides.plan ?? {
         executable: true,
-        commands: ["npm unpublish '@tjh/dsh-plugin-alpha@1.0.0' --force"],
+        commands: ["npm unpublish '@tjhaaa/dsh-plugin-alpha@1.0.0' --force"],
         note: '可撤回',
       }
     },
@@ -41,7 +41,7 @@ async function fixture(overrides = {}) {
 const options = (data, io, extra = {}) => ({
   repoRoot: data.root,
   targetAdapter: data.target,
-  spec: '@tjh/dsh-plugin-alpha@1.0.0',
+  spec: '@tjhaaa/dsh-plugin-alpha@1.0.0',
   io,
   sleepFn: async () => {},
   tagOps: {
@@ -52,19 +52,19 @@ const options = (data, io, extra = {}) => ({
 })
 
 test('parseSpec 支持 scoped 与普通包名', () => {
-  assert.deepEqual(parseSpec('@tjh/dsh-plugin-alpha@1.0.0'), {
-    name: '@tjh/dsh-plugin-alpha',
+  assert.deepEqual(parseSpec('@tjhaaa/dsh-plugin-alpha@1.0.0'), {
+    name: '@tjhaaa/dsh-plugin-alpha',
     version: '1.0.0',
   })
   assert.deepEqual(parseSpec('plain@2.0.0'), { name: 'plain', version: '2.0.0' })
-  assert.throws(() => parseSpec('@tjh/dsh-plugin-alpha'), /格式应为/)
+  assert.throws(() => parseSpec('@tjhaaa/dsh-plugin-alpha'), /格式应为/)
 })
 
 test('非本仓库包被拒绝', async () => {
   const data = await fixture()
   const io = makeIo()
   await assert.rejects(
-    () => runWithdraw(options(data, io, { spec: '@tjh/dsh-plugin-other@1.0.0' })),
+    () => runWithdraw(options(data, io, { spec: '@tjhaaa/dsh-plugin-other@1.0.0' })),
     /目标不属于当前仓库/,
   )
 })
@@ -82,7 +82,7 @@ test('超出 72 小时只输出 deprecate，不执行撤回', async () => {
   const data = await fixture({
     plan: {
       executable: false,
-      commands: ["npm deprecate '@tjh/dsh-plugin-alpha@1.0.0' 'withdrawn'"],
+      commands: ["npm deprecate '@tjhaaa/dsh-plugin-alpha@1.0.0' 'withdrawn'"],
       note: '超过窗口',
     },
   })
@@ -110,7 +110,7 @@ test('确认输入不匹配时取消', async () => {
 test('确认后撤回并轮询确认消失', async () => {
   const data = await fixture()
   data.states.push({ state: 'absent' })
-  const io = makeIo({ isTTY: true, answers: ['@tjh/dsh-plugin-alpha@1.0.0'] })
+  const io = makeIo({ isTTY: true, answers: ['@tjhaaa/dsh-plugin-alpha@1.0.0'] })
   const code = await runWithdraw(options(data, io))
   assert.equal(code, 0)
   assert.equal(data.calls.withdraw, 1)
@@ -120,7 +120,7 @@ test('确认后撤回并轮询确认消失', async () => {
 test('撤回后仍可查询时报错', async () => {
   const data = await fixture()
   data.states[0] = { state: 'published', publishedAt: '2026-11-20T00:00:00.000Z' }
-  const io = makeIo({ isTTY: true, answers: ['@tjh/dsh-plugin-alpha@1.0.0'] })
+  const io = makeIo({ isTTY: true, answers: ['@tjhaaa/dsh-plugin-alpha@1.0.0'] })
   await assert.rejects(() => runWithdraw(options(data, io)), /仍可查询/)
   assert.equal(data.calls.withdraw, 1)
 })
@@ -128,7 +128,7 @@ test('撤回后仍可查询时报错', async () => {
 test('撤回成功后 tag 不存在时跳过删除', async () => {
   const data = await fixture()
   data.states.push({ state: 'absent' })
-  const io = makeIo({ isTTY: true, answers: ['@tjh/dsh-plugin-alpha@1.0.0'] })
+  const io = makeIo({ isTTY: true, answers: ['@tjhaaa/dsh-plugin-alpha@1.0.0'] })
   const code = await runWithdraw(options(data, io, {
     tagOps: {
       deleteLocal: async () => false,
@@ -142,7 +142,7 @@ test('撤回成功后 tag 不存在时跳过删除', async () => {
 test('撤回成功后 tag 删除失败时报错', async () => {
   const data = await fixture()
   data.states.push({ state: 'absent' })
-  const io = makeIo({ isTTY: true, answers: ['@tjh/dsh-plugin-alpha@1.0.0'] })
+  const io = makeIo({ isTTY: true, answers: ['@tjhaaa/dsh-plugin-alpha@1.0.0'] })
   await assert.rejects(
     () => runWithdraw(options(data, io, {
       tagOps: {

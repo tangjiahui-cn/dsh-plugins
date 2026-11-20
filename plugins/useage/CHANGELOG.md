@@ -6,7 +6,7 @@
 
 - 增加子包发布工具 (b7bf8d0)
 - 点击查询失败可重新查询 (f53c7a3)
-- 新增 @tjh/dsh-plugin-useage 插件 (fe6290c)
+- 新增 @tjhaaa/dsh-plugin-useage 插件 (fe6290c)
 
 ### 修复
 

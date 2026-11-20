@@ -9,7 +9,7 @@ const official = 'https://registry.npmjs.org/'
 
 async function fixture({ npmrc, lockfile = 'lockfileVersion: 9.0\n', registry = official } = {}) {
   const root = await makeTempDir()
-  await writeFile(join(root, '.npmrc'), npmrc ?? `registry=${official}\n@tjh:registry=${official}\n`)
+  await writeFile(join(root, '.npmrc'), npmrc ?? `registry=${official}\n@tjhaaa:registry=${official}\n`)
   await writeFile(join(root, 'pnpm-lock.yaml'), lockfile)
   const fake = await writeExecutable(root, 'fake-bin', `
     process.stdout.write((process.env.FAKE_REGISTRY || ${JSON.stringify(registry)}) + '\\n')
@@ -47,18 +47,18 @@ test('.npmrc 缺失时失败', async () => {
 })
 
 test('.npmrc registry 不是官方源时失败', async () => {
-  const data = await fixture({ npmrc: `registry=https://registry.example.test/\n@tjh:registry=${official}\n` })
+  const data = await fixture({ npmrc: `registry=https://registry.example.test/\n@tjhaaa:registry=${official}\n` })
   await assert.rejects(() => assertOfficialSource(options(data)), /\.npmrc 的 registry/)
 })
 
-test('.npmrc 缺少 @tjh scope 时失败', async () => {
+test('.npmrc 缺少 @tjhaaa scope 时失败', async () => {
   const data = await fixture({ npmrc: `registry=${official}\n` })
-  await assert.rejects(() => assertOfficialSource(options(data)), /@tjh:registry/)
+  await assert.rejects(() => assertOfficialSource(options(data)), /@tjhaaa:registry/)
 })
 
 test('.npmrc 含凭据时失败', async () => {
   const data = await fixture({
-    npmrc: `registry=${official}\n@tjh:registry=${official}\n//registry.npmjs.org/:_authToken=secret\n`,
+    npmrc: `registry=${official}\n@tjhaaa:registry=${official}\n//registry.npmjs.org/:_authToken=secret\n`,
   })
   await assert.rejects(() => assertOfficialSource(options(data)), /不能包含认证凭据/)
 })

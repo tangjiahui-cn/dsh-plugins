@@ -1,4 +1,4 @@
-# @tjh/dsh-plugin-useage
+# @tjhaaa/dsh-plugin-useage
 
 标题行显示此对话总金额，点开看今日、总计与余额。
 
@@ -30,10 +30,10 @@ DSH 升级后先比对该表，再按 `dsh-doc` 的升级指引复核投影与�
 从 npm 安装：
 
 ```sh
-dsh plugin --profile <profile> add @tjh/dsh-plugin-useage
+dsh plugin --profile <profile> add @tjhaaa/dsh-plugin-useage
 ```
 
-也可以在插件管理器中搜索并安装 `@tjh/dsh-plugin-useage`。DSH profile 的 registry 必须能解析 npm 官方源；仓库根 `.npmrc` 只作用于本仓库命令，不作用于 profile。
+也可以在插件管理器中搜索并安装 `@tjhaaa/dsh-plugin-useage`。DSH profile 的 registry 必须能解析 npm 官方源；仓库根 `.npmrc` 只作用于本仓库命令，不作用于 profile。
 
 本地开发时，在仓库根执行 `pnpm install`，再在插件管理器中安装本地目录 `plugins/useage`。
 
@@ -42,7 +42,7 @@ dsh plugin --profile <profile> add @tjh/dsh-plugin-useage
 ```yaml
 - insert:
     - id: useage
-      name: '@tjh/dsh-plugin-useage'
+      name: '@tjhaaa/dsh-plugin-useage'
       config:
         currency: CNY
         timezone: Asia/Shanghai

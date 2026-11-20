@@ -57,7 +57,7 @@
 
 ### 2. 包发现与顺序
 
-- 候选包：读取 `plugins/*/package.json`，名称匹配 `@tjh/dsh-plugin-*`。
+- 候选包：读取 `plugins/*/package.json`，名称匹配 `@tjhaaa/dsh-plugin-*`。
 - 选择：`--package <name>` 可重复；未指定时选择全部通过校验的包。未知包名直接终止并列出候选。
 - 顺序：在候选集合内，用 `dependencies` 与 `optionalDependencies` 中指向本地候选包的边做 Kahn 拓扑排序；同层按包名排序，保证输出稳定。出现环时报出环上的包并终止。
 - 不把 `peerDependencies` 作为顺序边：peer 不参与安装顺序，且语义上是消费方约束。
@@ -66,7 +66,7 @@
 
 顺序如下，任一阶段失败即终止，且尚未调用 registry 写接口：
 
-1. **官方源**：根 `.npmrc` 存在且 `registry`、`@tjh:registry` 都等于 `https://registry.npmjs.org/`；`npm config get registry` 与 `pnpm config get registry` 在仓库根返回同一地址；`pnpm-lock.yaml` 中所有 `tarball` 地址的主机都是 `registry.npmjs.org`。任一不符即终止。
+1. **官方源**：根 `.npmrc` 存在且 `registry`、`@tjhaaa:registry` 都等于 `https://registry.npmjs.org/`；`npm config get registry` 与 `pnpm config get registry` 在仓库根返回同一地址；`pnpm-lock.yaml` 中所有 `tarball` 地址的主机都是 `registry.npmjs.org`。任一不符即终止。
 2. **工作区**：`git status --porcelain --untracked-files=all` 必须为空。已忽略文件不列出，因此 `.tmp/`、`node_modules/` 不触发失败。
 3. **清单**：名称前缀、semver、非 `private`、`files` 非空、`license` 与 `LICENSE` 文件、`repository`、`publishConfig.access === "public"`、`publishConfig.registry` 与目标 registry 一致、`dsh.bundle.patch` 存在。
 4. **打包内容**：`npm pack --dry-run --json` 取 tarball 文件列表。检查 `exports` 每个目标、`dsh.bundle.patch`、locale 与 icon 都在列表内；从 tarball 内的 `.js` 文件出发，扫描相对导入（`from './x.js'`、`import './x.js'`）并递归，任何解析不到或不在列表内的目标都报错。`today.js` 这类漏项由该检查拦住。
@@ -119,16 +119,16 @@ npm publish --access public --registry https://registry.npmjs.org/ --tag latest
   "startedAt": "2026-11-20T02:00:00.000Z",
   "finishedAt": "2026-11-20T02:01:00.000Z",
   "exitCode": 1,
-  "plan": [{ "name": "@tjh/dsh-plugin-useage", "version": "0.1.0", "order": 1 }],
+  "plan": [{ "name": "@tjhaaa/dsh-plugin-useage", "version": "0.1.0", "order": 1 }],
   "results": [
-    { "name": "@tjh/dsh-plugin-useage", "version": "0.1.0", "status": "published", "integrity": "sha512-...", "url": "https://www.npmjs.com/package/...", "releaseCommit": "abc123", "tag": "@tjh/dsh-plugin-useage@0.1.0", "tagPushed": true, "changelogMissing": false }
+    { "name": "@tjhaaa/dsh-plugin-useage", "version": "0.1.0", "status": "published", "integrity": "sha512-...", "url": "https://www.npmjs.com/package/...", "releaseCommit": "abc123", "tag": "@tjhaaa/dsh-plugin-useage@0.1.0", "tagPushed": true, "changelogMissing": false }
   ],
   "rollback": {
     "windowHours": 72,
     "commands": [
-      "npm unpublish '@tjh/dsh-plugin-useage@0.1.0' --force --registry https://registry.npmjs.org/ --cache \"$(git rev-parse --show-toplevel)/.tmp/release/npm-cache\"",
-      "git tag -d '@tjh/dsh-plugin-useage@0.1.0'",
-      "git push origin :refs/tags/@tjh/dsh-plugin-useage@0.1.0"
+      "npm unpublish '@tjhaaa/dsh-plugin-useage@0.1.0' --force --registry https://registry.npmjs.org/ --cache \"$(git rev-parse --show-toplevel)/.tmp/release/npm-cache\"",
+      "git tag -d '@tjhaaa/dsh-plugin-useage@0.1.0'",
+      "git push origin :refs/tags/@tjhaaa/dsh-plugin-useage@0.1.0"
     ],
     "note": "命令未执行；超过 72 小时改用 npm deprecate"
   }
@@ -221,10 +221,10 @@ npm publish --access public --registry https://registry.npmjs.org/ --tag latest
 
 ```ini
 registry=https://registry.npmjs.org/
-@tjh:registry=https://registry.npmjs.org/
+@tjhaaa:registry=https://registry.npmjs.org/
 ```
 
-- npm 与 pnpm 都读取项目 `.npmrc`，优先级高于用户级 `~/.npmrc`；显式写 `@tjh:registry` 防止用户级 scope 配置把待发布包指到私有源。
+- npm 与 pnpm 都读取项目 `.npmrc`，优先级高于用户级 `~/.npmrc`；显式写 `@tjhaaa:registry` 防止用户级 scope 配置把待发布包指到私有源。
 - 凭据仍来自用户级 `.npmrc`、`NPM_TOKEN` 或 automation token，仓库文件不保存认证信息。
 - 现有 `pnpm-lock.yaml` 的 3 处 `tarball` 地址指向私有镜像。切换源后删除锁文件并重新执行 `pnpm install`，再确认锁文件不含非 `registry.npmjs.org` 的 `tarball` 地址。官方源提供相同版本，版本号不变。
 - 发布前检查 `.npmrc`、`npm config get registry`、`pnpm config get registry` 与锁文件；环境变量 `NPM_CONFIG_REGISTRY` 能压过项目配置，检查失败时报告生效值，不静默继续。
@@ -247,7 +247,7 @@ registry=https://registry.npmjs.org/
 
 ### 13. 子包 tag 生命周期与 `release:tag`
 
-- 名称：`<包名>@<版本>`，例如 `@tjh/dsh-plugin-useage@0.1.0`；annotated tag，消息与名称相同。
+- 名称：`<包名>@<版本>`，例如 `@tjhaaa/dsh-plugin-useage@0.1.0`；annotated tag，消息与名称相同。
 - 发布前检查：`git rev-parse -q --verify refs/tags/<tag>` 必须失败；`git ls-remote --tags origin refs/tags/<tag>` 必须无输出；`git remote get-url origin` 必须成功。
 - 创建时机：发布前记录 `releaseCommit = git rev-parse HEAD`；包发布成功后在该 commit 创建 tag，并 `git push origin <tag>`。push 最多重试 2 次，仍失败停止后续包并写报告。tag 不指向 push 时的当前 `HEAD`。
 - 修复命令：`release:tag <name>@<version> [--at <commit>]`，用于已发布版本的 tag 缺失或本地/远程不同步。
@@ -322,7 +322,7 @@ registry=https://registry.npmjs.org/
 - **环境变量压过项目配置**：`NPM_CONFIG_REGISTRY` 会让 `pnpm install` 与发布预检查之外的命令回到私有源 → 发布预检查比较生效值并终止；README 提示检查该变量。普通安装无法由仓库拦截，属于用户环境。
 - **锁文件重新生成改变解析结果**：删除锁文件后 `pnpm install` 会在 semver 范围内重新选版 → 审查 diff，版本变化时重跑 `plugins/useage` 的 check 与 test；官方源当前提供相同版本，预计只去掉 `tarball` 字段。
 - **官方源可达性**：强制官方源后，网络受限环境可能下载变慢或失败 → 这是“只使用官方源”的代价，不提供回退；失败时保留 pnpm 原始错误。
-- **仓库 `.npmrc` 不覆盖 profile**：DSH 从 profile 目录安装插件，不读取本仓库配置 → README 写明安装前确认 profile 的 registry 能解析 `@tjh/dsh-plugin-*`。
+- **仓库 `.npmrc` 不覆盖 profile**：DSH 从 profile 目录安装插件，不读取本仓库配置 → README 写明安装前确认 profile 的 registry 能解析 `@tjhaaa/dsh-plugin-*`。
 - **发布不可重试**：同一版本号第二次发布会失败 → 预检查 `npm view`；一键流程按 registry 跳过已发布版本，只补 tag。
 - **changelog 范围依赖 tag**：tag 缺失、移动或不在当前历史路径上会让范围出错 → 首版显式使用该包目录全部提交；发布前要求目标 tag 不存在；报告显示使用的上一个 tag。
 - **非约定提交**：不匹配 Conventional Commits 的提交归入「维护」，不丢失；破坏性变更只有 subject 带 `!` 时才进入该分组。
@@ -344,11 +344,11 @@ registry=https://registry.npmjs.org/
 1. 先切换源：新增根 `.npmrc`，删除现有 `pnpm-lock.yaml`，在仓库根执行 `pnpm install` 生成新锁文件；确认 `npm config get registry`、`pnpm config get registry` 返回官方源，锁文件没有非官方 `tarball` 地址。
 2. 落地 `scripts/release/`、根 `package.json` 命令、两份 LICENSE、`plugins/useage/package.json` 与 `CHANGELOG.md` 修正。
 3. 对 `plugins/useage` 执行 `pnpm release:changelog` 生成 0.1.0 段落，提交全部改动；确认 `CHANGELOG.md` 进入 tarball。
-4. 执行 `pnpm install --frozen-lockfile`，再执行 `pnpm release:plan` 确认 changelog、tag 缺失状态与计划只含 `@tjh/dsh-plugin-useage@0.1.0`。
-5. 确认已登录 npmjs、对 `@tjh` scope 有发布权限、origin 可写，执行 `pnpm release`（或 `pnpm release:publish`）。
-6. 确认 npm registry 上出现该版本，本地与 origin 上出现 `@tjh/dsh-plugin-useage@0.1.0` tag。
+4. 执行 `pnpm install --frozen-lockfile`，再执行 `pnpm release:plan` 确认 changelog、tag 缺失状态与计划只含 `@tjhaaa/dsh-plugin-useage@0.1.0`。
+5. 确认已登录 npmjs、对 `@tjhaaa` scope 有发布权限、origin 可写，执行 `pnpm release`（或 `pnpm release:publish`）。
+6. 确认 npm registry 上出现该版本，本地与 origin 上出现 `@tjhaaa/dsh-plugin-useage@0.1.0` tag。
 7. 在干净 DSH profile 中按 README 安装该版本，确认插件行出现并可打开弹窗。
-8. 回滚：72 小时内执行 `pnpm release:withdraw @tjh/dsh-plugin-useage@0.1.0`；超过窗口执行报告给出的 `npm deprecate`，并发布修正版本。
+8. 回滚：72 小时内执行 `pnpm release:withdraw @tjhaaa/dsh-plugin-useage@0.1.0`；超过窗口执行报告给出的 `npm deprecate`，并发布修正版本。
 
 ## Open Questions
 

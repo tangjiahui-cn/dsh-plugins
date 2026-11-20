@@ -5,12 +5,12 @@ import { makeIo } from '../test-support/helpers.mjs'
 
 test('parseArgs 识别新命令与选项', () => {
   assert.equal(parseArgs(['release', '--yes']).command, 'release')
-  assert.deepEqual(parseArgs(['changelog', '--package', '@tjh/dsh-plugin-alpha']).options.packages, [
-    '@tjh/dsh-plugin-alpha',
+  assert.deepEqual(parseArgs(['changelog', '--package', '@tjhaaa/dsh-plugin-alpha']).options.packages, [
+    '@tjhaaa/dsh-plugin-alpha',
   ])
-  const tag = parseArgs(['tag', '@tjh/dsh-plugin-alpha@0.1.0', '--at', 'abc123'])
+  const tag = parseArgs(['tag', '@tjhaaa/dsh-plugin-alpha@0.1.0', '--at', 'abc123'])
   assert.equal(tag.options.at, 'abc123')
-  assert.deepEqual(tag.positionals, ['@tjh/dsh-plugin-alpha@0.1.0'])
+  assert.deepEqual(tag.positionals, ['@tjhaaa/dsh-plugin-alpha@0.1.0'])
   assert.equal(parseArgs(['clean']).command, 'clean')
   assert.equal(parseArgs(['publish', '--dry-run']).options.dryRun, true)
 })

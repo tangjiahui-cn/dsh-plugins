@@ -6,7 +6,7 @@ DSH 只在每条助手消息上给出单次 usage，会话级「今日花了多�
 
 ## What Changes
 
-- 新增 bundle 插件 `@tjh/dsh-plugin-useage`（`plugins/useage`），Host 侧注册会话投影 `conversationCost`，Client 侧在 `conversation.session.header.utilities` 槽渲染胶囊与弹窗。
+- 新增 bundle 插件 `@tjhaaa/dsh-plugin-useage`（`plugins/useage`），Host 侧注册会话投影 `conversationCost`，Client 侧在 `conversation.session.header.utilities` 槽渲染胶囊与弹窗。
 - 胶囊展示今日对话金额与今日 token 总量；弹窗以两张卡展示「此对话花费」「今日总花费」，每张卡内含金额与输入/输出/合计 token，底部一行账户余额。两张卡始终展示，不做相同值合并。
 - Host 投影折叠 `assistant/message`、`assistant/attempt` 的 provider usage，按 `event.time` 分日桶；按 `request/header` 中的 provider/model 查配置单价换算金额。
 - 插件 Config 提供：模型价格表（输入/输出/缓存读/缓存写，每百万 token）、币种、时区、余额开关。

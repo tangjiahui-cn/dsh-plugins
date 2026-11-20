@@ -29,7 +29,7 @@ async function fixture() {
   const root = await makeTempDir()
   const dir = join(root, 'plugins', 'alpha')
   await writeJson(join(dir, 'package.json'), {
-    name: '@tjh/dsh-plugin-alpha',
+    name: '@tjhaaa/dsh-plugin-alpha',
     version: '0.1.0',
     files: ['index.js', 'CHANGELOG.md'],
   })
@@ -48,7 +48,7 @@ async function fixture() {
     root,
     remoteRoot,
     pkg: {
-      name: '@tjh/dsh-plugin-alpha',
+      name: '@tjhaaa/dsh-plugin-alpha',
       version: '0.1.0',
       relDir: 'plugins/alpha',
       dir,
@@ -59,7 +59,7 @@ async function fixture() {
 
 test('tag 名使用包名与版本', async () => {
   const data = await fixture()
-  assert.equal(tagName(data.pkg), '@tjh/dsh-plugin-alpha@0.1.0')
+  assert.equal(tagName(data.pkg), '@tjhaaa/dsh-plugin-alpha@0.1.0')
 })
 
 test('tag 不存在时通过，创建并 push 后本地与远程一致', async () => {

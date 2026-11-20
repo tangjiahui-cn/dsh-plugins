@@ -3,7 +3,7 @@
 ## 1. 包骨架与版本记录
 
 - [x] 1.1 在 `plugins/useage` 创建 `package.json`（`type: module`、`dsh.bundle.patch`、`dsh.client` 指向 `./client.js`、`exports` 含 `.`、`./client`、`./locale/*.json`），执行 `pnpm install` 后确认工作区链接建立
-- [x] 1.2 创建 `cordis.patch.yml`、`index.js`（`export function apply(ctx, config)`、`export const inject`、`export const Config`）、`client.js` 占位模块与 `locale/{en,zh}.json`，确认 `pnpm --filter @tjh/dsh-plugin-useage exec node --check client.js` 通过
+- [x] 1.2 创建 `cordis.patch.yml`、`index.js`（`export function apply(ctx, config)`、`export const inject`、`export const Config`）、`client.js` 占位模块与 `locale/{en,zh}.json`，确认 `pnpm --filter @tjhaaa/dsh-plugin-useage exec node --check client.js` 通过
 - [x] 1.3 在 README 写入「开发与验证环境」段，记录 `@deepseek-ai/dsh 0.2.2-rc.5`、Desktop `app.asar` 安装形态与验证日期，确认 `grep -n "0.2.2-rc.5" README.md` 命中
 
 ## 2. Host 投影与计价

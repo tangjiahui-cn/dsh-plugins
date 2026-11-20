@@ -3,7 +3,7 @@
  * 余额在展开时按需查询账户服务，失败即隐藏。
  */
 window.__ModuleLoader__.load({
-  id: '@tjh/dsh-plugin-useage',
+  id: '@tjhaaa/dsh-plugin-useage',
   factory(require) {
     const React = require('react')
     const h = React.createElement

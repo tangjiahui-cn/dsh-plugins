@@ -137,7 +137,7 @@ test('release:clean 发现版本已发布时拒绝恢复', async () => {
     baseHead,
     releaseCommit: baseHead,
     files: [],
-    packages: [{ name: '@tjh/dsh-plugin-alpha', version: '0.1.0' }],
+    packages: [{ name: '@tjhaaa/dsh-plugin-alpha', version: '0.1.0' }],
   }, root)
   const target = {
     async inspectVersion() {
@@ -171,9 +171,9 @@ test('release:clean 发现 tag 已存在时拒绝恢复', async () => {
     baseHead,
     releaseCommit: baseHead,
     files: [],
-    packages: [{ name: '@tjh/dsh-plugin-alpha', version: '0.1.0' }],
+    packages: [{ name: '@tjhaaa/dsh-plugin-alpha', version: '0.1.0' }],
   }, root)
-  await git(root, ['tag', '@tjh/dsh-plugin-alpha@0.1.0'])
+  await git(root, ['tag', '@tjhaaa/dsh-plugin-alpha@0.1.0'])
   const target = {
     async inspectVersion() {
       return { state: 'absent' }

@@ -24,7 +24,7 @@ async function fixture() {
   const root = await makeTempDir()
   const dir = join(root, 'plugins', 'alpha')
   await writeJson(join(dir, 'package.json'), {
-    name: '@tjh/dsh-plugin-alpha',
+    name: '@tjhaaa/dsh-plugin-alpha',
     version: '0.1.0',
     files: ['index.js', 'CHANGELOG.md'],
   })
@@ -35,7 +35,7 @@ async function fixture() {
   await git(root, ['add', '-A'])
   await git(root, ['commit', '-qm', 'feat: initial'])
   const pkg = {
-    name: '@tjh/dsh-plugin-alpha',
+    name: '@tjhaaa/dsh-plugin-alpha',
     version: '0.1.0',
     relDir: 'plugins/alpha',
     dir,
@@ -89,7 +89,7 @@ test('后续生成使用上一条 tag 到 HEAD，并跳过发布提交', async (
   await writeChangelog({ pkg: data.pkg, version: data.pkg.version, ...data.options })
   await git(data.root, ['add', '-A'])
   await git(data.root, ['commit', '-qm', 'docs: changelog'])
-  await git(data.root, ['tag', '@tjh/dsh-plugin-alpha@0.1.0'])
+  await git(data.root, ['tag', '@tjhaaa/dsh-plugin-alpha@0.1.0'])
 
   await writeFile(join(data.dir, 'index.js'), 'export const changed = true\n')
   await git(data.root, ['add', '-A'])
@@ -146,7 +146,7 @@ test('版本与 changelog 分开提交时校验仍通过', async () => {
   await writeChangelog({ pkg: data.pkg, version: data.pkg.version, ...data.options })
   await git(data.root, ['add', '-A'])
   await git(data.root, ['commit', '-qm', 'docs: changelog'])
-  await git(data.root, ['tag', '@tjh/dsh-plugin-alpha@0.1.0'])
+  await git(data.root, ['tag', '@tjhaaa/dsh-plugin-alpha@0.1.0'])
 
   await writeFile(join(data.dir, 'index.js'), 'export const fixed = true\n')
   await git(data.root, ['add', '-A'])

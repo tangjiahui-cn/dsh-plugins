@@ -13,7 +13,7 @@ test('check 或 test 失败时抛错', async () => {
   `)
   await assert.rejects(
     () => runPackageChecks(
-      { name: '@tjh/dsh-plugin-alpha' },
+      { name: '@tjhaaa/dsh-plugin-alpha' },
       { pnpmBin: fakePnpm, repoRoot: root },
     ),
     /check 失败[\s\S]*check failed/,
@@ -27,7 +27,7 @@ test('skip 时不执行任何检查', async () => {
     require('node:fs').appendFileSync(${JSON.stringify(log)}, process.argv.slice(2).join(' ') + '\\n')
   `)
   await runPackageChecks(
-    { name: '@tjh/dsh-plugin-alpha' },
+    { name: '@tjhaaa/dsh-plugin-alpha' },
     { pnpmBin: fakePnpm, repoRoot: root, skip: true },
   )
   await assert.rejects(() => readFile(log, 'utf8'))

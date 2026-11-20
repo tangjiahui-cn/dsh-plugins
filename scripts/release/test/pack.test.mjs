@@ -10,7 +10,7 @@ test('相对导入缺失时失败', async () => {
   await writeFiles(root, {
     'index.js': "import { x } from './missing.js'\nexport { x }\n",
   })
-  const pkg = { name: '@tjh/dsh-plugin-alpha', dir: root, manifest: { exports: { '.': './index.js' } } }
+  const pkg = { name: '@tjhaaa/dsh-plugin-alpha', dir: root, manifest: { exports: { '.': './index.js' } } }
   await assert.rejects(
     () => assertPackContents(pkg, ['index.js']),
     /index\.js 引用的 \.\/missing\.js 不在 tarball 内/,
@@ -23,7 +23,7 @@ test('相对导入闭包完整时通过', async () => {
     'index.js': "import { x } from './dep.js'\nexport { x }\n",
     'dep.js': 'export const x = 1\n',
   })
-  const pkg = { name: '@tjh/dsh-plugin-alpha', dir: root, manifest: { exports: { '.': './index.js' } } }
+  const pkg = { name: '@tjhaaa/dsh-plugin-alpha', dir: root, manifest: { exports: { '.': './index.js' } } }
   await assertPackContents(pkg, ['index.js', 'dep.js'])
 })
 
@@ -31,7 +31,7 @@ test('exports 与 bundle patch 必须在 tarball 内', async () => {
   const root = await makeTempDir()
   await writeFiles(root, { 'index.js': 'export {}\n' })
   const pkg = {
-    name: '@tjh/dsh-plugin-alpha',
+    name: '@tjhaaa/dsh-plugin-alpha',
     dir: root,
     manifest: {
       exports: { '.': './index.js', './icon': './icon.svg' },
@@ -50,12 +50,12 @@ test('exports 与 bundle patch 必须在 tarball 内', async () => {
 
 test('packDryRun 解析假 npm 的 JSON 输出', async () => {
   const root = await makeTempDir()
-  await writeJson(join(root, 'package.json'), { name: '@tjh/dsh-plugin-alpha', version: '1.0.0' })
+  await writeJson(join(root, 'package.json'), { name: '@tjhaaa/dsh-plugin-alpha', version: '1.0.0' })
   const fakeNpm = await writeExecutable(root, 'fake-npm', `
     process.stdout.write(JSON.stringify([{ files: [{ path: 'index.js' }, { path: 'today.js' }] }]))
   `)
   const files = await packDryRun(
-    { name: '@tjh/dsh-plugin-alpha', dir: root },
+    { name: '@tjhaaa/dsh-plugin-alpha', dir: root },
     { npmBin: fakeNpm, cacheDir: join(root, 'cache') },
   )
   assert.deepEqual(files, ['index.js', 'today.js'])
@@ -63,7 +63,7 @@ test('packDryRun 解析假 npm 的 JSON 输出', async () => {
 
 test('真实 useage 包的 tarball 含 today.js 且导入闭包通过', async () => {
   const packages = await discoverPackages()
-  const pkg = packages.find(item => item.name === '@tjh/dsh-plugin-useage')
+  const pkg = packages.find(item => item.name === '@tjhaaa/dsh-plugin-useage')
   assert.ok(pkg, '缺少 useage 包')
   const files = await packDryRun(pkg, { cacheDir: join(process.cwd(), '.tmp/release/npm-cache') })
   assert.ok(files.includes('today.js'))

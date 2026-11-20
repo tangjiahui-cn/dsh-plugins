@@ -46,7 +46,7 @@ test('inspectVersion 把 E404 映射为 absent，参数含 registry 与 cache', 
     stdout: '',
     stderr: 'npm error code E404',
   }))
-  assert.deepEqual(await target.inspectVersion({ name: '@tjh/dsh-plugin-alpha', version: '1.0.0' }), {
+  assert.deepEqual(await target.inspectVersion({ name: '@tjhaaa/dsh-plugin-alpha', version: '1.0.0' }), {
     state: 'absent',
   })
   assert.ok(calls[0].args.includes('--registry'))
@@ -62,7 +62,7 @@ test('inspectVersion 返回已发布版本与发布时间', async () => {
     }
     return { code: 0, stdout: JSON.stringify({ version: '1.0.0', gitHead: 'abc123' }), stderr: '' }
   })
-  assert.deepEqual(await target.inspectVersion({ name: '@tjh/dsh-plugin-alpha', version: '1.0.0' }), {
+  assert.deepEqual(await target.inspectVersion({ name: '@tjhaaa/dsh-plugin-alpha', version: '1.0.0' }), {
     state: 'published',
     publishedAt,
     gitHead: 'abc123',
@@ -72,16 +72,16 @@ test('inspectVersion 返回已发布版本与发布时间', async () => {
 test('publish 解析 integrity 并传 access public', async () => {
   const { target, calls } = fakeTarget(() => ({
     code: 0,
-    stdout: JSON.stringify({ name: '@tjh/dsh-plugin-alpha', version: '1.0.0', integrity: 'sha512-abc' }),
+    stdout: JSON.stringify({ name: '@tjhaaa/dsh-plugin-alpha', version: '1.0.0', integrity: 'sha512-abc' }),
     stderr: '',
   }))
   const result = await target.publish({
-    name: '@tjh/dsh-plugin-alpha',
+    name: '@tjhaaa/dsh-plugin-alpha',
     version: '1.0.0',
     dir: '/repo/plugins/alpha',
   })
   assert.equal(result.integrity, 'sha512-abc')
-  assert.match(result.url, /@tjh\/dsh-plugin-alpha\/v\/1\.0\.0/)
+  assert.match(result.url, /@tjhaaa\/dsh-plugin-alpha\/v\/1\.0\.0/)
   assert.ok(calls[0].args.includes('--access'))
   assert.ok(calls[0].args.includes('public'))
   assert.ok(calls[0].args.includes('--registry'))
@@ -94,9 +94,9 @@ test('withdrawPlan 在 72 小时内给出 unpublish，超出窗口给出 depreca
     }
     return { code: 0, stdout: JSON.stringify({ version: '1.0.0', gitHead: null }), stderr: '' }
   })
-  const plan = await inWindow.target.withdrawPlan({ name: '@tjh/dsh-plugin-alpha', version: '1.0.0' })
+  const plan = await inWindow.target.withdrawPlan({ name: '@tjhaaa/dsh-plugin-alpha', version: '1.0.0' })
   assert.equal(plan.executable, true)
-  assert.match(plan.commands[0], /npm unpublish '@tjh\/dsh-plugin-alpha@1\.0\.0' --force/)
+  assert.match(plan.commands[0], /npm unpublish '@tjhaaa\/dsh-plugin-alpha@1\.0\.0' --force/)
 
   const oldTime = '2026-11-01T00:00:00.000Z'
   const outOfWindow = fakeTarget(args => {
@@ -106,11 +106,11 @@ test('withdrawPlan 在 72 小时内给出 unpublish，超出窗口给出 depreca
     return { code: 0, stdout: JSON.stringify({ version: '1.0.0', gitHead: null }), stderr: '' }
   })
   const oldPlan = await outOfWindow.target.withdrawPlan({
-    name: '@tjh/dsh-plugin-alpha',
+    name: '@tjhaaa/dsh-plugin-alpha',
     version: '1.0.0',
   })
   assert.equal(oldPlan.executable, false)
-  assert.match(oldPlan.commands[0], /npm deprecate '@tjh\/dsh-plugin-alpha@1\.0\.0'/)
+  assert.match(oldPlan.commands[0], /npm deprecate '@tjhaaa\/dsh-plugin-alpha@1\.0\.0'/)
 })
 
 test('withdraw 只执行一次 unpublish', async () => {
@@ -123,7 +123,7 @@ test('withdraw 只执行一次 unpublish', async () => {
     if (args[0] === 'unpublish') return { code: 0, stdout: '', stderr: '' }
     return { code: 0, stdout: JSON.stringify({ version: '1.0.0', gitHead: null }), stderr: '' }
   })
-  await target.withdraw({ name: '@tjh/dsh-plugin-alpha', version: '1.0.0' })
+  await target.withdraw({ name: '@tjhaaa/dsh-plugin-alpha', version: '1.0.0' })
   assert.equal(calls.filter(args => args[0] === 'unpublish').length, 1)
 })
 
@@ -132,7 +132,7 @@ test('inspectVersion 在没有 gitHead 时返回 null', async () => {
     if (args.includes('time')) return { code: 0, stdout: '{}', stderr: '' }
     return { code: 0, stdout: JSON.stringify({ version: '1.0.0' }), stderr: '' }
   })
-  const state = await target.inspectVersion({ name: '@tjh/dsh-plugin-alpha', version: '1.0.0' })
+  const state = await target.inspectVersion({ name: '@tjhaaa/dsh-plugin-alpha', version: '1.0.0' })
   assert.equal(state.state, 'published')
   assert.equal(state.gitHead, null)
 })

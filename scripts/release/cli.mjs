@@ -44,9 +44,9 @@ withdraw 选项：
   pnpm release
   pnpm release:changelog
   pnpm release:plan
-  pnpm release:publish -- --package @tjh/dsh-plugin-useage
-  pnpm release:tag -- @tjh/dsh-plugin-useage@0.1.0 --at <commit>
-  pnpm release:withdraw -- @tjh/dsh-plugin-useage@0.1.0
+  pnpm release:publish -- --package @tjhaaa/dsh-plugin-useage
+  pnpm release:tag -- @tjhaaa/dsh-plugin-useage@0.1.0 --at <commit>
+  pnpm release:withdraw -- @tjhaaa/dsh-plugin-useage@0.1.0
   pnpm release:clean
 `
 

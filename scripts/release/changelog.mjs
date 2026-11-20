@@ -60,6 +60,21 @@ export function dateInShanghai(date = new Date()) {
   return `${value.year}-${value.month}-${value.day}`
 }
 
+function packageScope(pkg) {
+  if (!pkg.name.startsWith('@')) return null
+  const index = pkg.name.indexOf('/')
+  return index === -1 ? null : pkg.name.slice(0, index + 1)
+}
+
+function normalizeSubject(subject, pkg) {
+  const scope = packageScope(pkg)
+  if (scope === null) return subject
+  const base = pkg.name.slice(scope.length)
+  return subject.replace(/@[^/\s]+\/([a-z0-9][\w.-]*)/g, (match, name) => (
+    name === base ? `${scope}${name}` : match
+  ))
+}
+
 export function parseCommitSubject(subject) {
   const match = /^(?<type>[a-zA-Z]+)(?:\((?<scope>[^)]*)\))?(?<breaking>!)?:\s+(?<subject>.+)$/.exec(subject)
   if (match === null) {
@@ -137,7 +152,13 @@ export async function collectCommits({ pkg, ...options }) {
     .filter(Boolean)
     .map(record => {
       const [hash, shortHash, subject] = record.split('\x1f')
-      return { hash, shortHash, subject, ...parseCommitSubject(subject) }
+      const parsed = parseCommitSubject(subject)
+      return {
+        hash,
+        shortHash,
+        ...parsed,
+        subject: normalizeSubject(parsed.subject, pkg),
+      }
     })
 
   let start = 0

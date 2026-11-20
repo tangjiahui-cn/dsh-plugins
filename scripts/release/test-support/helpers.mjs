@@ -19,7 +19,7 @@ export async function writeFiles(root, files) {
   }
 }
 
-export function validManifest(name = '@tjh/dsh-plugin-alpha') {
+export function validManifest(name = '@tjhaaa/dsh-plugin-alpha') {
   return {
     name,
     version: '1.2.3',

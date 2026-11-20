@@ -14,7 +14,7 @@
 - `release:publish` 保留为低层命令，发布前校验 changelog 内容与当前 tag 范围一致、tag 在本地与 origin 都不存在；发布成功后按发布前记录的 commit 创建 annotated tag 并 push 到 origin。
 - 发布失败报告与 `release:withdraw` 同步输出或执行 tag 删除命令；已发布版本缺 changelog 时只补 tag 并标记 `changelogMissing`，不重发同版本。
 - 所有写发布状态、registry 或 git ref 的命令使用 `.tmp/release/lock` 互斥。
-- 根目录新增 `.npmrc`，把 `registry` 与 `@tjh` scope 固定到 `https://registry.npmjs.org/`；重新生成 `pnpm-lock.yaml`，清除私有镜像的 tarball 地址。
+- 根目录新增 `.npmrc`，把 `registry` 与 `@tjhaaa` scope 固定到 `https://registry.npmjs.org/`；重新生成 `pnpm-lock.yaml`，清除私有镜像的 tarball 地址。
 - 发布前强制校验：git 工作区无未提交改动；tarball 内每个文件都被 git 跟踪；包清单满足 npm 安装要求；实际生效的 npm/pnpm registry 与锁文件都只指向官方源。
 - 一次发布多个子包：默认发布全部可发布子包，支持按包名选择，按本地依赖拓扑排序，失败即停。
 - 发布计划先展示，确认后执行；支持 `--dry-run` 只输出计划。

@@ -4,7 +4,7 @@
 
 - [x] 1.1 建立 `scripts/release/config.mjs` 与 `cli.mjs`：registry、npm 缓存目录、子包 glob、报告根目录集中配置；解析 `publish` / `withdraw` 子命令与 `--package`、`--dry-run`、`--yes`、`--otp`、`--target`、`--skip-checks`、`--report-dir`。验证：`node scripts/release/cli.mjs --help` 退出 0 并列出全部参数，未知子命令退出非零。
 - [x] 1.2 在根 `package.json` 增加 `release`、`release:publish`、`release:plan`、`release:withdraw` 命令。验证：`pnpm run release:plan -- --help` 与 `pnpm run release:publish -- --help` 退出 0，输出包含发布参数说明。
-- [x] 1.3 创建根 `.npmrc`，写入 `registry=https://registry.npmjs.org/` 与 `@tjh:registry=https://registry.npmjs.org/`，不写 token。验证：在仓库根执行 `npm config get registry` 与 `pnpm config get registry` 都返回 `https://registry.npmjs.org/`，且 `git check-ignore -v .npmrc` 不命中忽略规则。
+- [x] 1.3 创建根 `.npmrc`，写入 `registry=https://registry.npmjs.org/` 与 `@tjhaaa:registry=https://registry.npmjs.org/`，不写 token。验证：在仓库根执行 `npm config get registry` 与 `pnpm config get registry` 都返回 `https://registry.npmjs.org/`，且 `git check-ignore -v .npmrc` 不命中忽略规则。
 - [x] 1.4 重新生成 `pnpm-lock.yaml`：删除现有锁文件后在仓库根执行 `pnpm install`。验证：锁文件中所有 `tarball` 地址的主机都是 `registry.npmjs.org`，`grep -Eo 'tarball: https?://[^/]+' pnpm-lock.yaml | grep -v 'registry.npmjs.org'` 无输出，`pnpm install --frozen-lockfile` 通过；版本若变化，重跑 `plugins/useage` 的 check 与 test。
 
 ## 2. 子包发现、清单校验与 useage 可发布
@@ -19,7 +19,7 @@
 - [x] 3.1 实现 `git.mjs`：解析 `git status --porcelain --untracked-files=all`，并要求 tarball 内每个路径由 `git ls-files --error-unmatch` 命中。验证：临时 git 仓库用例覆盖未跟踪、已暂存、被忽略但被打入 tarball 三种失败，以及干净仓库通过。
 - [x] 3.2 实现 `pack.mjs`：调用 `npm pack --dry-run --json --cache <隔离缓存>`，校验 `exports` 目标、`dsh.bundle.patch`、locale、icon 在文件列表内，并从 tarball 内的 `.js` 递归解析字面量相对导入。验证：测试夹具故意漏掉被导入文件时失败；真实 `plugins/useage` 通过，且 2.3 之前漏掉 `today.js` 的清单会被同一检查判失败。
 - [x] 3.3 实现检查脚本阶段：对每个包执行 `pnpm --filter <name> run --if-present check` 与 `test`，失败即终止；`--skip-checks` 只跳过该阶段。验证：单测注入退出非零的检查命令，断言预检抛错且不产出可发布计划。
-- [x] 3.4 实现官方源预检：解析根 `.npmrc` 的 `registry` 与 `@tjh:registry`，在仓库根执行 `npm config get registry` 与 `pnpm config get registry`，扫描 `pnpm-lock.yaml` 的 `tarball` 地址；任一不等于 `https://registry.npmjs.org/` 或主机不是 `registry.npmjs.org` 时终止并输出实际值。验证：单测覆盖 `.npmrc` 缺失、地址错误、环境变量覆盖、锁文件私有地址四种失败，以及全部合规时通过。
+- [x] 3.4 实现官方源预检：解析根 `.npmrc` 的 `registry` 与 `@tjhaaa:registry`，在仓库根执行 `npm config get registry` 与 `pnpm config get registry`，扫描 `pnpm-lock.yaml` 的 `tarball` 地址；任一不等于 `https://registry.npmjs.org/` 或主机不是 `registry.npmjs.org` 时终止并输出实际值。验证：单测覆盖 `.npmrc` 缺失、地址错误、环境变量覆盖、锁文件私有地址四种失败，以及全部合规时通过。
 
 ## 4. npm 目标适配器
 
@@ -49,7 +49,7 @@
 ## 8. 集成与文档
 
 - [x] 8.1 更新根 `README.md`：增加用户安装段与维护者发布段（`release:plan`、`release:publish`、`release:withdraw`），注明仓库 `.npmrc` 固定官方源、需要 npmjs 登录、72 小时撤销窗口，以及 DSH profile 需能解析官方包。验证：README 中每条命令的参数都能在 `node scripts/release/cli.mjs --help` 中找到，安装包名与 `plugins/useage/package.json` 一致。
-- [x] 8.2 运行完整计划：`pnpm release:plan` 输出只含 `@tjh/dsh-plugin-useage@0.1.0`、顺序为 1、registry 为 npmjs；同时确认 `today.js` 已在 tarball 检查中列出。验证：命令退出 0，输出与上述三项逐项匹配。
+- [x] 8.2 运行完整计划：`pnpm release:plan` 输出只含 `@tjhaaa/dsh-plugin-useage@0.1.0`、顺序为 1、registry 为 npmjs；同时确认 `today.js` 已在 tarball 检查中列出。验证：命令退出 0，输出与上述三项逐项匹配。
 - [x] 8.3 用假 npm 跑通双包成功与中途失败两条端到端路径，检查退出码、报告文件与未执行包。验证：`pnpm test:release` 全绿，且两条路径的临时报告目录包含预期文件。
 
 ## 9. Changelog 与 tag 基础
@@ -80,7 +80,7 @@
 
 ## Workflow follow-up
 
-- 在 npmjs 登录、确认 `@tjh` scope 发布权限与 origin 写权限后执行 `pnpm release`，完成版本询问、changelog 提交、发布与 tag 推送。
+- 在 npmjs 登录、确认 `@tjhaaa` scope 发布权限与 origin 写权限后执行 `pnpm release`，完成版本询问、changelog 提交、发布与 tag 推送。
 - 确认 npm registry 上有版本，本地与 origin 上有对应 tag；在干净的 DSH profile 中安装该版本，确认插件行、标题行胶囊与弹窗可用。
 - 按项目评审要求归档本 change，并复核归档后的 `plugin-release` 主 spec。
 

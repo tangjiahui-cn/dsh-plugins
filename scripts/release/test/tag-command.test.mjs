@@ -17,7 +17,7 @@ async function fixture({ changelog = false, gitHead = true } = {}) {
   const root = await makeTempDir()
   const dir = join(root, 'plugins', 'alpha')
   await writeJson(join(dir, 'package.json'), {
-    name: '@tjh/dsh-plugin-alpha',
+    name: '@tjhaaa/dsh-plugin-alpha',
     version: '0.1.0',
     files: ['index.js', 'CHANGELOG.md'],
   })
@@ -53,20 +53,20 @@ const io = () => ({ log() {}, error() {} })
 test('release:tag 用 gitHead 创建并 push tag', async () => {
   const data = await fixture()
   const result = await runTag({
-    spec: '@tjh/dsh-plugin-alpha@0.1.0',
+    spec: '@tjhaaa/dsh-plugin-alpha@0.1.0',
     io: io(),
     ...data.options,
   })
   assert.equal(result.state, 'created')
   assert.equal(result.changelogMissing, true)
-  assert.equal(await localTagCommit('@tjh/dsh-plugin-alpha@0.1.0', data.options), data.commit)
-  assert.equal(await remoteTagCommit('@tjh/dsh-plugin-alpha@0.1.0', data.options), data.commit)
+  assert.equal(await localTagCommit('@tjhaaa/dsh-plugin-alpha@0.1.0', data.options), data.commit)
+  assert.equal(await remoteTagCommit('@tjhaaa/dsh-plugin-alpha@0.1.0', data.options), data.commit)
 })
 
 test('release:tag 用 --at 在 gitHead 缺失时定位', async () => {
   const data = await fixture({ gitHead: false, changelog: true })
   const result = await runTag({
-    spec: '@tjh/dsh-plugin-alpha@0.1.0',
+    spec: '@tjhaaa/dsh-plugin-alpha@0.1.0',
     at: data.commit,
     io: io(),
     ...data.options,
@@ -78,7 +78,7 @@ test('release:tag 用 --at 在 gitHead 缺失时定位', async () => {
 test('release:tag 无目标 commit 时拒绝，不使用 HEAD', async () => {
   const data = await fixture({ gitHead: false })
   await assert.rejects(
-    () => runTag({ spec: '@tjh/dsh-plugin-alpha@0.1.0', io: io(), ...data.options }),
+    () => runTag({ spec: '@tjhaaa/dsh-plugin-alpha@0.1.0', io: io(), ...data.options }),
     /请用 --at/,
   )
 })
@@ -86,7 +86,7 @@ test('release:tag 无目标 commit 时拒绝，不使用 HEAD', async () => {
 test('release:tag 版本与目标 commit 不一致时拒绝', async () => {
   const data = await fixture()
   await assert.rejects(
-    () => runTag({ spec: '@tjh/dsh-plugin-alpha@9.9.9', io: io(), ...data.options }),
+    () => runTag({ spec: '@tjhaaa/dsh-plugin-alpha@9.9.9', io: io(), ...data.options }),
     /期望 .*9\.9\.9/,
   )
 })

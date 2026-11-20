@@ -10,5 +10,5 @@
 ## 插件命名规则
 
 ```text
-@tjh/dsh-plugin-{插件目录名}
+@tjhaaa/dsh-plugin-{插件目录名}
 ```

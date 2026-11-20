@@ -61,9 +61,9 @@ export async function assertOfficialSource(options = {}) {
   if (normalizeRegistry(configured) !== normalizeRegistry(registry)) {
     throw new ReleaseError(`.npmrc 的 registry 必须是 ${registry}，实际：${configured ?? '（缺失）'}`)
   }
-  const scoped = npmrc.get('@tjh:registry')
+  const scoped = npmrc.get('@tjhaaa:registry')
   if (normalizeRegistry(scoped) !== normalizeRegistry(registry)) {
-    throw new ReleaseError(`.npmrc 的 @tjh:registry 必须是 ${registry}，实际：${scoped ?? '（缺失）'}`)
+    throw new ReleaseError(`.npmrc 的 @tjhaaa:registry 必须是 ${registry}，实际：${scoped ?? '（缺失）'}`)
   }
   const credential = [...npmrc.keys()].find(credentialKey)
   if (credential !== undefined) {
